@@ -13,7 +13,7 @@
 wx.BaaS.auth.getCurrentUser().then(user => {
   // user 为 currentUser 对象
 }).catch(err => {
-  // HError  
+  // HError
   if( err.code === 604 ){
     console.log('用户未登录')
   }
@@ -29,7 +29,56 @@ wx.BaaS.auth.getCurrentUser().then(user => {
 currentUser 代表了当前登录的用户，开发者可以通过浏览 currentUser 上的字段来获取当前用户的信息，通过调用 currentUser 上的方法来更新用户信息。
 该对象关联 `_userprofile` 表中 id 为当前用户 ID 的数据行。currentUser 字段包含了 `_userprofile`表的所有的*内置字段*，自定义字段可以通过 `currentUser.get(key)` 来获取。
 
-![控制台输出 currentUser 对象](../images/auth/current-user.png)
+```javascript
+// currentUser 数据结构
+{
+  avatar: "...",
+  city: "...",
+  country: "...",
+  created_at: 1557474865,
+  created_by: 45768973992321,
+  gender: 1,
+  get: function (key) {}
+  id: 45768973992321,
+  is_authorized: true,
+  language: "...",
+  nickname: "...",
+  openid: "...",  // 微信小程序用户的唯一标识，非微信用户将返回空值。同时，微信小程序 openid 也会和其他平台一样，在 _provider 里存储一份。
+  province: "...",
+  session_expires_at": 1561283491,
+  toJSON: function () {},
+  unionid: "...",  // 微信开发平台用户的唯一标识，非微信用户将返回空值
+  updated_at: 1558691521,
+  user_id: 45768973992321,
+  _anonymous: false,
+  _email_verified : false,
+  _provider: {
+    alipay: {
+      avatar: "...",
+      province: "...",
+      city: "...",
+      nick_name: "...",
+      is_student: true,
+      user_type: "...",
+      user_status: "...",
+      verified: true,
+      gender: "..."
+    },
+    wechat: {
+      avatar: "...",
+      city: "...",
+      country: "...",
+      gender: 1,
+      language: "...",
+      nickname: "...",
+      openid: "...",
+      province: "...",
+      unionid: "...",
+    }
+  }
+}
+
+```
 
 ### 获取用户自定义字段
 
@@ -44,7 +93,7 @@ currentUser 代表了当前登录的用户，开发者可以通过浏览 current
 **示例代码**
 
 假设开发者在 _userprofile 表中定义了 `custom_name` 列，并设置当前用户的 `custom_name` 为 `ifanrx`。则在 SDK 中查询当前用户自定义字段代码如下：
-  
+
 {% ifanrxCodeTabs %}
 ```javascript
 wx.BaaS.auth.getCurrentUser().then(user => {
@@ -59,11 +108,11 @@ wx.BaaS.auth.getCurrentUser().then(user => {
 
 **示例代码**
 假设开发者在 _userprofile 表中定义了 `custom_name` 列，并设置当前用户的 `custom_name` 为 `ifanrx`。则在 SDK 中查询当前用户自定义字段代码如下：
-  
+
 {% ifanrxCodeTabs %}
 ```javascript
 wx.BaaS.auth.getCurrentUser().then(user => {
-  console.log(user.toJSON()) 
+  console.log(user.toJSON())
 })
 ```
 {% endifanrxCodeTabs %}
@@ -96,15 +145,15 @@ wx.BaaS.auth.getCurrentUser().then(user => {
 ```
 字段说明请参考 [获取用户信息小节](user.md)
 
-### 判断用户是否是匿名用户
+### 判断用户是否是临时用户
 
 {% ifanrxCodeTabs %}
 ```javascript
 wx.BaaS.auth.getCurrentUser().then(user => {
   if (user._anonymous) {
-    // 匿名用户
+    // 临时用户
   } else {
-    // 非匿名用户
+    // 非临时用户
   }
 })
 ```
@@ -119,12 +168,12 @@ wx.BaaS.auth.getCurrentUser().then(user => {
 - 用户使用小程序授权登录后，通过设置用户名或邮箱，以便下次通过用户名或邮箱登录。
 
 > **info**
-> 除更新自定义字段外，其他方法匿名用户无法调用
+> 除更新自定义字段外，其他方法临时用户无法调用
 
 ### 初始化账号信息
 
 > **info**
-> 匿名用户无法调用
+> 临时用户无法调用
 
 `currentUser.setAccount({username, email, password})`
 
@@ -143,20 +192,21 @@ wx.BaaS.auth.getCurrentUser().then(user => {
 {% ifanrxCodeTabs %}
 ```javascript
 // ...
-let currentUser = wx.BaaS.auth.getCurrentUser()
-
-currentUser.setAccount({username: 'hello', email: 'hello@ifanr.com', password: '111111'}).then(user => {
-  console.log(user)
-}).catch(err=>{
-  // HError
-})
+wx.BaaS.auth.getCurrentUser()
+  .then(user => {
+    return user.setAccount({username: 'hello', email: 'hello@ifanr.com', password: '111111'})
+  }).then(user => {
+    console.log(user)
+  }).catch(err => {
+    // HError
+  })
 ```
 {% endifanrxCodeTabs %}
 
 ### 设置用户名
 
 > **info**
-> 匿名用户无法调用
+> 临时用户无法调用
 
 > 用户名不区分大小写。当用户设置了 username 为 ifanrx 的账号后，其他人不能再注册诸如 Ifanrx、IfAnrx、IFANRX 等账号了
 
@@ -172,13 +222,14 @@ currentUser.setAccount({username: 'hello', email: 'hello@ifanr.com', password: '
 
 {% ifanrxCodeTabs %}
 ```javascript
-let currentUser = wx.BaaS.auth.getCurrentUser()
-
-currentUser.setUsername('ifanrx_new').then(user => {
-  console.log(user)
-}).catch(err=>{
-  // HError
-})
+wx.BaaS.auth.getCurrentUser()
+  .then(user => {
+    return user.setUsername('ifanrx_new')
+  }).then(user => {
+    console.log(user)
+  }).catch(err => {
+    // HError
+  })
 ```
 {% endifanrxCodeTabs %}
 
@@ -192,9 +243,9 @@ err 对象结构请参考[错误码和 HError 对象](/js-sdk/error-code.md)
 ### 设置邮箱
 
 > **info**
-> 匿名用户无法调用
+> 临时用户无法调用
 
-> 邮箱中的英文字母会被强制转换为小写。例如 iFanrX@Hello.com 会被转换成 ifanrx@hello.com 
+> 邮箱中的英文字母会被强制转换为小写。例如 iFanrX@Hello.com 会被转换成 ifanrx@hello.com
 
 `currentUser.setEmail(email, {sendVerificationEmail})`
 
@@ -210,13 +261,88 @@ err 对象结构请参考[错误码和 HError 对象](/js-sdk/error-code.md)
 
 {% ifanrxCodeTabs %}
 ```javascript
-wx.BaaS.auth.getCurrentUser().then(user => {
-  user.setEmail('ifanrx_new@ifanr.com', {sendVerificationEmail: true}).then(user => {
+wx.BaaS.auth.getCurrentUser()
+  .then(user => {
+    return user.setEmail('ifanrx_new@ifanr.com', {sendVerificationEmail: true})
+  }).then(user => {
     console.log(user)
-  }).catch(err=>{
-      // HError
-    })
-})
+  }).catch(err => {
+    // HError
+  })
+```
+{% endifanrxCodeTabs %}
+
+**返回结果说明**
+
+user 为 currentUser 对象，该对象的说明见上文
+
+err 对象结构请参考[错误码和 HError 对象](/js-sdk/error-code.md)
+
+
+### 设置手机号
+
+> **info**
+> 临时用户无法调用
+>
+> 重新设置手机号后，需要重新验证手机号。
+
+`currentUser.setMobilePhone(mobilePhone)`
+
+**参数说明**
+
+| 名称                    | 类型        | 必填  | 说明      |
+| :-----------------------| :---------- | ----- | :-------- |
+| mobilePhone             | String      | Y     |  新手机号 |
+
+**示例代码**
+
+{% ifanrxCodeTabs %}
+```javascript
+wx.BaaS.auth.getCurrentUser()
+  .then(user => {
+    return user.setMobilePhone('15000000000')
+  }).then(user => {
+    console.log(user)
+  }).catch(err => {
+    // HError
+  })
+```
+{% endifanrxCodeTabs %}
+
+**返回结果说明**
+
+user 为 currentUser 对象，该对象的说明见上文
+
+err 对象结构请参考[错误码和 HError 对象](/js-sdk/error-code.md)
+
+
+### 验证手机号
+
+> **info**
+> 临时用户无法调用
+>
+> 短信验证码 smsCode 通过接口 `BaaS.sendSmsCode()` 获取，请查看[文档](/js-sdk/sms.md)
+
+`currentUser.verifyMobilePhone(smsCode)`
+
+**参数说明**
+
+| 名称                | 类型        | 必填  | 说明        |
+| :-------------------| :---------- | ----- | :---------- |
+| smsCode             | String      | Y     |  短信验证码 |
+
+**示例代码**
+
+{% ifanrxCodeTabs %}
+```javascript
+wx.BaaS.auth.getCurrentUser()
+  .then(user => {
+    return user.verifyMobilePhone('123456')
+  }).then(user => {
+    console.log(user)
+  }).catch(err => {
+    // HError
+  })
 ```
 {% endifanrxCodeTabs %}
 
@@ -230,7 +356,7 @@ err 对象结构请参考[错误码和 HError 对象](/js-sdk/error-code.md)
 ### 更新密码
 
 > **info**
-> 匿名用户无法调用
+> 临时用户无法调用
 
 `currentUser.updatePassword({password, newPassword})`
 
@@ -245,13 +371,14 @@ err 对象结构请参考[错误码和 HError 对象](/js-sdk/error-code.md)
 
 {% ifanrxCodeTabs %}
 ```javascript
-wx.BaaS.auth.getCurrentUser().then(user =>{
-  user.updatePassword({password: '111111', newPassword: '222222'}).then(user => {
+wx.BaaS.auth.getCurrentUser()
+  .then(user => {
+    return user.updatePassword({password: '111111', newPassword: '222222'})
+  }).then(user => {
     console.log(user)
-  }).catch(err=>{
-      // HError
-  })  
-})
+  }).catch(err => {
+    // HError
+  })
 ```
 {% endifanrxCodeTabs %}
 
@@ -262,20 +389,24 @@ err 对象结构请参考[错误码和 HError 对象](/js-sdk/error-code.md)
 
 ### 更新用户自定义字段
 
-更新用户信息与[数据表更新数据项](schema/update-record.md)方法基本一致。这里只允许更新 _userprofile 表中自定义的字段。
+更新用户信息与[数据表更新数据项](schema/update-record.md)方法基本一致。这里只允许当前用户更新 `_userprofile` 表中自己的自定义字段。
+
+> **info**
+> 处于权限安全考虑，JS SDK 仅允许当前用户更新自己的自定义字段，如业务需要更新其他用户自定义字段，请调用云函数，使用[云函数的用户更新方法](../cloud-function/node-sdk/user.md#更新用户信息)，并在云函数中对用户身份进行校验，避免安全问题。
 
 **请求示例**
 
 {% ifanrxCodeTabs %}
 ```js
-wx.BaaS.auth.getCurrentUser().then(user =>{
-   // age 为自定义字段
-   user.set('age', 30).update().then(res => {
-     // success
-   }, err => {
-     // err 为 HError 对象
-   }) 
-})
+wx.BaaS.auth.getCurrentUser()
+  .then(user => {
+    // age 为自定义字段
+    return user.set('age', 30).update()
+  }).then(user => {
+    // success
+  }).catch(err => {
+    // err 为 HError 对象
+  })
 ```
 {% endifanrxCodeTabs %}
 
@@ -283,7 +414,7 @@ wx.BaaS.auth.getCurrentUser().then(user =>{
 ## 邮箱验证
 
 > **info**
-> 匿名用户无法调用
+> 临时用户无法调用
 
 `currentUser.requestEmailVerification()`
 
@@ -294,13 +425,14 @@ wx.BaaS.auth.getCurrentUser().then(user =>{
 
 {% ifanrxCodeTabs %}
 ```js
-wx.BaaS.auth.getCurrentUser().then(user =>{
-  user.requestEmailVerification().then(res => {
+wx.BaaS.auth.getCurrentUser()
+  .then(user => {
+    return user.requestEmailVerification()
+  }).then(res => {
     console.log(res)
-  }).catch(err=>{
+  }).catch(err => {
     // HError
   })
-})
 ```
 {% endifanrxCodeTabs %}
 
@@ -315,3 +447,29 @@ wx.BaaS.auth.getCurrentUser().then(user =>{
 ```
 
 err 对象结构请参考[错误码和 HError 对象](/js-sdk/error-code.md)
+
+# 同步第一层级用户信息
+
+2.x 支持多平台登录，第三方登录（微信小程序中使用微信登录与支付宝小程序中使用支付宝登录，都属于第三方登录）
+后获取到的用户信息保存在 userpofile 记录的 `_provider` 字段（参照上文 currentUser 中的 `_provider` 字段）中，
+而 1.x 的用户数据保存在与 `_provider` 同一层级（即第一层级）的字段中，为了使相关代码能平滑升级到 2.x，
+第一层级的用户信息字段被保留了下来，并提供了接口让开发者决定是否在用户授权的时候，同步第一层级的用户信息。
+
+支持的接口：
+
+1. [微信登录](/js-sdk/wechat/signin-signout.md)
+  1. `wx.BaaS.loginWithWechat(data, {syncUserProfile})`
+  2. `UserRecord.linkWechat(data, {syncUserProfile})`
+2. [支付宝登录](/js-sdk/alipay/signin-signout.md)
+  1. `my.BaaS.loginWithAlipay({forceLogin, syncUserProfile})`
+  2. `UserRecord.linkAlipay({forceLogin, syncUserProfile})`
+
+支持同步的字段：
+
+1. nickname: 昵称
+2. avatar: 头像
+3. gender: 性别（仅微信）
+4. language: 语言
+5. city: 城市
+6. province: 省份
+7. country: 国家

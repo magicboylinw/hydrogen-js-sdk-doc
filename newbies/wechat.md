@@ -29,17 +29,25 @@
 >**danger**
 > 如果注册或邮件激活失败，请开发者根据失败提示进行后续操作。如果开发者认为是服务提供方方面导致的失败，请邮件联系 `mincloud@ifanr.com`，我们会第一时间处理您的邮件。
 
-### 小程序第三方授权以及服务器域名配置
+## 小程序第三方授权
 
 为了使用知晓云提供的后端服务，进入 dashboard 后，开发者首先需要为知晓云授权。
 
-知晓云在设置模块提供了**一键授权**功能，用户只需点击**立即授权**并在新开授权回调页完成授权即可。
+知晓云在设置模块提供了**一键授权**功能，用户只需在应用“导览”页中找到微信小程序平台，点击**立即接入**，接着在“设置-微信”页中点击**立即授权**并在新开授权回调页完成授权即可。
+
+![开通微信小程序平台](/images/newbies/open-up-wechat.png)
 
 ![一键授权](/images/newbies/one-key-authorization.png)
 
-{% tabs SDKPluginConfig="SDK 插件版接入", SDKFileConfig="SDK 文件版接入" %}
+至此，我们就完成了微信小程序对知晓云的第三方授权。
+
+{% tabs SDKPluginConfig="SDK 插件版接入（推荐）", SDKFileConfig="SDK 文件版接入" %}
 
 {% content "SDKPluginConfig" %}
+
+插件版 SDK 将占用一个小程序插件名额（同一个小程序同时仅可使用 5 个插件）。
+
+插件版 SDK 1.5.1 以上需小程序基础库 2.1.0 及以上。
 
 ## 第一个接入知晓云的小程序
 
@@ -51,7 +59,7 @@
 
 ![创建小程序项目](/images/newbies/minapp-creation.jpeg)
 
-其中 `AppID` 为小程序的 ID，在微信小程序后台**设置 >> 开发设置** 中可获取，知晓云也在[**设置模块的小程序面板**](https://cloud.minapp.com/dashboard/#/app/settings/app/)提供了快速通道获取小程序 ID。
+其中 `AppID` 为小程序的 ID，在微信小程序后台**设置 >> 开发设置** 中可获取，知晓云也在[**设置模块的小程序面板**](https://cloud.minapp.com/dashboard/#/app/[[app_id | addSlashPostfixIfNotEmpty]]settings/app/)提供了快速通道获取小程序 ID。
 
 ![开发者 ID](/images/newbies/developer-id.png)
 
@@ -74,11 +82,9 @@
 
 通过初始化 [SDK](/js-sdk/download-sdk.md)，知晓云服务可以验证当前的小程序是否是有效合法的，只有通过验证的小程序才能使用 [SDK](/js-sdk/download-sdk.md) 提供的全部功能。
 
-在知晓云后台 - [**设置模块的小程序面板**](https://cloud.minapp.com/dashboard/#/app/settings/app/)，可获取要接入知晓云服务的小程序 `ClientID`, 按照如下方式进行 [SDK](/js-sdk/download-sdk.md) 初始化:
+在知晓云后台 - [**设置模块的小程序面板**](https://cloud.minapp.com/dashboard/#/app/[[app_id | addSlashPostfixIfNotEmpty]]settings/info/)，可获取要接入知晓云服务的小程序 `ClientID`, 按照如下方式进行 [SDK](/js-sdk/download-sdk.md) 初始化:
 
-![复制 clientID](/images/newbies/get-client-id1.jpeg)
-
-![复制 clientID](/images/newbies/get-client-id2.jpeg)
+![复制 clientID](/images/newbies/get-client-id.png)
 
 ```js
 // app.js
@@ -90,7 +96,7 @@ App({
      wx.getUserInfo,
      wx.requestPayment)
 
-    let clientID = '知晓云管理后台获取到的 ClientID'
+    let clientID = '[[client_id]]'  // 应用名称: [[app_name]]
     wx.BaaS.init(clientID)
   }
 })
@@ -141,7 +147,7 @@ Page({
 
 同时，我们可以在数据管理模块看到新增的数据项。
 
-![bookshelf 数据表](/images/newbies/bookshelf-schema.jpeg)
+![bookshelf 数据表](/images/newbies/bookshelf-schema.png)
 
 至于更新书名和删除书籍等操作，其接口调用过程大致和创建书籍一样，这里就不再赘述，详见[**演示 demo**](https://github.com/ifanrx/hydrogen-demo.git)的源码。
 
@@ -149,7 +155,7 @@ Page({
 
 {% content "SDKFileConfig" %}
 
-完成授权后，接下来用户需要进行服务器域名配置，以解锁小程序 [SDK](/js-sdk/download-sdk.md) 服务。
+完成授权后，使用本地文件版 SDK 的用户需要进行服务器域名配置，以解锁小程序 SDK 服务。[SDK 文件下载](/js-sdk/download-sdk.md)
 
 ![知晓云服务器域名](/images/newbies/hydrogen-domain-name1.png)
 
@@ -169,7 +175,7 @@ Page({
 
 ![创建小程序项目](/images/newbies/minapp-creation.jpeg)
 
-其中 `AppID` 为小程序的 ID，在微信小程序后台**设置 >> 开发设置** 中可获取，知晓云也在[**设置模块的小程序面板**](https://cloud.minapp.com/dashboard/#/app/settings/app/)提供了快速通道获取小程序 ID。
+其中 `AppID` 为小程序的 ID，在微信小程序后台**设置 >> 开发设置** 中可获取，知晓云也在[**设置模块的小程序面板**](https://cloud.minapp.com/dashboard/#/app/[[app_id | addSlashPostfixIfNotEmpty]]settings/app/)提供了快速通道获取小程序 ID。
 
 ![开发者 ID](/images/newbies/developer-id.png)
 
@@ -191,7 +197,7 @@ App({
 
 最后，通过初始化 [SDK](/js-sdk/download-sdk.md)，知晓云服务可以验证当前的小程序是否是有效合法的，只有通过验证的小程序才能使用 [SDK](/js-sdk/download-sdk.md) 提供的全部功能。
 
-在知晓云后台 - [**设置模块的小程序面板**](https://cloud.minapp.com/dashboard/#/app/settings/app/)，可获取要接入知晓云服务的小程序 `ClientID`, 按照如下方式进行 [SDK](/js-sdk/download-sdk.md) 初始化:
+在知晓云后台 - [**设置模块的小程序面板**](https://cloud.minapp.com/dashboard/#/app/[[app_id | addSlashPostfixIfNotEmpty]]settings/info/)，可获取要接入知晓云服务的小程序 `ClientID`, 按照如下方式进行 [SDK](/js-sdk/download-sdk.md) 初始化:
 
 <pre>
 <code class="lang-js">
@@ -202,7 +208,7 @@ App({
     require('./sdk-v{{ book.latestVersionWechat }}')
 
     // 初始化 SDK
-    let clientID = '知晓云管理后台获取到的 ClientID'
+    let clientID = '[[client_id]]'  // 应用名称: [[app_name]]
     wx.BaaS.init(clientID)
   }
 })
@@ -253,7 +259,7 @@ Page({
 
 同时，我们可以在数据管理模块看到新增的数据项。
 
-![bookshelf 数据表](/images/newbies/bookshelf-schema.jpeg)
+![bookshelf 数据表](/images/newbies/bookshelf-schema.png)
 
 至于更新书名和删除书籍等操作，其接口调用过程大致和创建书籍一样，这里就不再赘述，详见[**演示 demo**](https://github.com/ifanrx/hydrogen-demo/tree/master/hello-world)的源码。
 

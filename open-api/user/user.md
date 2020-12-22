@@ -12,6 +12,9 @@
 
 其中 `user_id` 可从用户列表中获取。
 
+> **info**
+> 推荐使用[用户信息处理](#用户信息处理)中的接口进行用户信息的获取，v1 接口已废弃。
+
 **代码示例**
 
 {% tabs  curl="Curl", node="Node", php="PHP" %}
@@ -94,6 +97,9 @@ curl_close($ch);
 **接口**
 
 `GET https://cloud.minapp.com/oserve/v1/miniapp/user-profile/`
+
+> **info**
+> 推荐使用[用户信息处理](#用户信息处理)中的接口进行用户信息的获取，v1 接口已废弃。
 
 **参数说明**
 
@@ -215,6 +221,7 @@ curl_close($ch);
 }
 ```
 
+
 ## 用户信息处理
 
 支持自定义字段的查询，更新。
@@ -225,7 +232,11 @@ curl_close($ch);
 
 ~~`GET https://cloud.minapp.com/oserve/v1/user/info/`~~(后续将废弃该接口，推荐使用以下接口)
 
-`GET https://cloud.minapp.com/oserve/v1.9/miniapp/user_profile/`
+`GET https://cloud.minapp.com/oserve/v2.2/miniapp/user_profile/`
+
+> **info**
+> 该接口支持通过参数 return_total_count 指定是否返回查询对象总数，以协助不关心对象总数只关心查询结果列表的开发者提升接口响应速度。
+同时，从 v2.2 版本开始该接口默认不返回查询对象总数，欲获取总数的开发者需要显式指定 return_total_count 参数。
 
 **参数说明**
 
@@ -235,6 +246,15 @@ curl_close($ch);
 | order_by | String | N   | 以下字段不支持排序：gender, country, province, city, language |
 | limit    | Number | N   | 限制返回资源的个数，默认为 20 条，最大可设置为 1000 |
 | offset   | Number | N   | 设置返回资源的起始偏移值，默认为 0 |
+| return_total_count   | Number | N   | 返回结果 meta 中是否返回 total_count，1 为返回，0 为不返回，默认不返回 |
+
+若开发者只需要获取对象总数，则可以通过设置 `limit=1` 以及 `return_total_count=1` 来达到该效果，total_count 可从返回的 meta 中获取
+
+请求示例：
+
+```
+https://cloud.minapp.com/oserve/v2.2/miniapp/user_profile/?limit=1&return_total_count=1
+```
 
 > **info**
 > where 字段的详细说明请查看：[数据模块：数据操作](https://doc.minapp.com/open-api/data/record.html#%E6%9F%A5%E8%AF%A2%E6%95%B0%E6%8D%AE)。
@@ -249,7 +269,7 @@ curl_close($ch);
 curl -X GET \
   -H "Authorization: Bearer 35919068aa799eccdef160e1da4bf21381" \
   --data-urlencode '{"test": {"$eq":"test"}}'\
-  https://cloud.minapp.com/oserve/v1.9/miniapp/user_profile/
+  https://cloud.minapp.com/oserve/v2.2/miniapp/user_profile/
 ```
 
 {% content "bulkGetSingleUserInfoNode" %}
@@ -259,14 +279,15 @@ var request = require("request");
 
 var options = {
   method: 'GET',
-  url: 'https://cloud.minapp.com/oserve/v1.9/miniapp/user_profile/',
+  url: 'https://cloud.minapp.com/oserve/v2.2/miniapp/user_profile/',
   headers:
   {
     'Content-Type': 'application/json',
     Authorization: 'Bearer 35919068aa799eccf19160e1da4bf2138'
   },
   qs: {
-    where: JSON.stringify({"test": {"$eq": "test"}})
+    where: JSON.stringify({"test": {"$eq": "test"}})，
+    return_total_count: 1
   }
 };
 
@@ -281,7 +302,7 @@ var req = request(options, function (error, response, body) {
 ```php
 <?php
 $token = '35919068aa799eccdef19160e1da4bf21381';
-$url = "https://cloud.minapp.com/oserve/v1.9/miniapp/user_profile/?";
+$url = "https://cloud.minapp.com/oserve/v2.2/miniapp/user_profile/?";
 
 $ch = curl_init();
 $header = array(
@@ -291,6 +312,7 @@ $header = array(
 
 $condition = array(
   'where' => json_encode(['test' => ['$eq' => 'test']]),
+  'return_total_count' => '1'
 );
 $url .= http_build_query($condition);
 
@@ -379,7 +401,7 @@ if ($err) {
 
 ~~`GET https://cloud.minapp.com/oserve/v1/user/info/:id/`~~(后续将废弃该接口，推荐使用以下接口)
 
-`GET https://cloud.minapp.com/oserve/v1.9/miniapp/user_profile/:id/`
+`GET https://cloud.minapp.com/oserve/v2.2/miniapp/user_profile/:id/`
 
 其中 `:id` 是用户在 `_userprofile` 表中的 `id`。
 
@@ -392,7 +414,7 @@ if ($err) {
 ```shell
 curl -X GET \
 -H "Authorization: Bearer 35919068aa799eccdef19160e1da4bf21381d2a2" \
-https://cloud.minapp.com/oserve/v1.9/miniapp/user_profile/70695404/
+https://cloud.minapp.com/oserve/v2.2/miniapp/user_profile/70695404/
 ```
 
 {% content "getSingleUserInfoNode" %}
@@ -402,7 +424,7 @@ var request = require("request");
 
 var options = {
   method: 'GET',
-  url: 'https://cloud.minapp.com/oserve/v1.9/miniapp/user_profile/70695404/',
+  url: 'https://cloud.minapp.com/oserve/v2.2/miniapp/user_profile/70695404/',
   headers:
   {
     'Content-Type': 'application/json',
@@ -421,7 +443,7 @@ var req = request(options, function (error, response, body) {
 ```php
 <?php
 $token = '35919068aa799eccdef19160e1da4bf21381d2a2';
-$url = "https://cloud.minapp.com/oserve/v1.9/miniapp/user_profile/70695404/";
+$url = "https://cloud.minapp.com/oserve/v2.2/miniapp/user_profile/70695404/";
 
 $ch = curl_init();
 $header = array(
@@ -486,7 +508,7 @@ if ($err) {
 
 ~~`PUT https://cloud.minapp.com/oserve/v1/user/info/:id/`~~(后续将废弃该接口，推荐使用以下接口)
 
-`PUT https://cloud.minapp.com/oserve/v1.9/miniapp/user_profile/:id/`
+`PUT https://cloud.minapp.com/oserve/v2.2/miniapp/user_profile/:id/`
 
 其中 `:id` 是用户在 `_userprofile` 表中的 `id`。
 
@@ -498,7 +520,7 @@ if ($err) {
 
 ```shell
 curl -X PUT \
-  https://cloud.minapp.com/oserve/v1.9/miniapp/user_profile/70695404/ \
+  https://cloud.minapp.com/oserve/v2.2/miniapp/user_profile/70695404/ \
   -H 'Authorization: Bearer 35919068aa799eccdef19160e1da4bf21381d2a2' \
   -H 'Content-Type: application/json' \
   -d '{"test": "test"}'
@@ -511,7 +533,7 @@ var request = require("request");
 
 var options = {
   method: 'PUT',
-  url: 'https://cloud.minapp.com/oserve/v1.9/miniapp/user_profile/70695404/',
+  url: 'https://cloud.minapp.com/oserve/v2.2/miniapp/user_profile/70695404/',
   headers:
   {
     'Content-Type': 'application/json',
@@ -532,7 +554,7 @@ var req = request(options, function (error, response, body) {
 ```php
 <?php
 $token = '35919068aa799eccdef19160e1da4bf21381d2a2';
-$url = "https://cloud.minapp.com/oserve/v1.9/miniapp/user_profile/70695404/";
+$url = "https://cloud.minapp.com/oserve/v2.2/miniapp/user_profile/70695404/";
 
 $ch = curl_init();
 $header = array(
@@ -589,6 +611,265 @@ if ($err) {
 `200`: 成功。
 
 `400`: 字段类型不匹配，更新非自定义字段或不存在的字段。
+
+`401`: 未授权，请检查请求头中的 Authorization 字段是否正确。
+
+`404`: 用户不存在。
+
+### 批量修改自定义字段
+
+`PUT https://cloud.minapp.com/oserve/v2.2/miniapp/user_profile/`
+
+> **info**
+> 该接口支持通过参数 return_total_count 指定是否返回待更新对象总数，以协助不关心对象总数只关心数据更新结果的开发者提升接口响应速度。
+同时，从 v2.2 版本开始该接口默认不返回待更新对象总数，欲获取总数的开发者需要显式指定 return_total_count 参数。
+
+**Query 参数说明**
+
+| 参数      | 类型   | 必填 | 说明 |
+| :------- | :----- | :-- | :-- |
+| where    | String | N   | 查询语句，参数值应经过 JSON 编码为 JSONString 后，再经过 URL 编码 |
+| limit    | Number | N   | 限制单次请求更新的用户数，默认为 20 条，最大可设置为 1000 |
+| offset   | Number | N   | 设置更新的偏移值，默认为 0 |
+| return_total_count   | Number | N   | 返回结果中是否包含 total_count，1 为包含，0 为不包含，默认不包含 |
+
+> **info**
+> where 字段的详细说明请查看：[数据模块：数据操作](https://doc.minapp.com/open-api/data/record.html#%E6%9F%A5%E8%AF%A2%E6%95%B0%E6%8D%AE)。
+
+**参数说明**
+
+> **info**
+> 参数与更新数据表数据的参数一致，详细说明请查看：[数据模块：更新数据](https://doc.minapp.com/open-api/data/record.html#%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE)。
+> 支持数据原子性更新，详细说明请查看：[数据模块：数据原子性更新](https://doc.minapp.com/open-api/data/record.html#%E6%95%B0%E6%8D%AE%E5%8E%9F%E5%AD%90%E6%80%A7%E6%9B%B4%E6%96%B0)。
+
+**代码示例**
+
+{% tabs  bulkUpdateUserInfoCurl="Curl", bulkUpdateUserInfoNode="Node", bulkUpdateUserInfoPHP="PHP" %}
+
+{% content "bulkUpdateUserInfoCurl"%}
+
+```shell
+curl -X PUT \
+  https://cloud.minapp.com/oserve/v2.2/miniapp/user_profile/ \
+  -H 'Authorization: Bearer 35919068aa799eccdef19160e1da4bf21381d2a2' \
+  -H 'Content-Type: application/json' \
+  -d '{"test": "test"}'
+```
+
+{% content "bulkUpdateUserInfoNode" %}
+
+```javascript
+var request = require("request");
+
+var options = {
+  method: 'PUT',
+  url: 'https://cloud.minapp.com/oserve/v2.2/miniapp/user_profile/',
+  headers:
+  {
+    'Content-Type': 'application/json',
+    Authorization: 'Bearer 35919068aa799eccdef19160e1da4bf21381d2a2'
+  },
+  body: { "test": "test" },
+  json: true
+};
+
+var req = request(options, function (error, response, body) {
+  if (error) throw new Error(error);
+  console.log(body);
+});
+```
+
+{% content "bulkUpdateUserInfoPHP"%}
+
+```php
+<?php
+$token = '35919068aa799eccdef19160e1da4bf21381d2a2';
+$url = "https://cloud.minapp.com/oserve/v2.2/miniapp/user_profile/";
+
+$ch = curl_init();
+$header = array(
+  "Authorization: Bearer {$token}",
+  'Content-Type: application/json; charset=utf-8'
+);
+
+curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+curl_setopt($ch, CURLOPT_URL, $url);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, "{\"test\": \"test\"}");
+
+$response = curl_exec($ch);
+$err = curl_error($ch);
+
+curl_close($ch);
+
+if ($err) {
+  echo "CURL Error #:" . $err;
+} else {
+  echo $response;
+}
+```
+
+{% endtabs %}
+
+**返回示例**
+
+```json
+{
+  "operation_result": [
+    {
+      "success": {
+        "id": "5a3c51cdceb616ccfc9d5f78",
+        "updated_at": 1564411939
+      }
+    }
+  ],
+  "succeed": 1,
+  "total_count": 1,
+  "offset": 0,
+  "limit": 1000,
+  "next": null
+}
+```
+
+> **info**
+> 返回参数的详细说明请查看：[数据模块：同步批量修改数据](https://doc.minapp.com/open-api/data/record.html#%E5%90%8C%E6%AD%A5%E6%89%B9%E9%87%8F%E4%BF%AE%E6%94%B9%E6%95%B0%E6%8D%AE)。
+
+**状态码说明**
+
+`200`: 成功。
+
+`400`: 字段类型不匹配，更新非自定义字段或不存在的字段。
+
+`401`: 未授权，请检查请求头中的 Authorization 字段是否正确。
+
+### 修改用户登录信息
+
+**接口**
+
+`PUT https://cloud.minapp.com/oserve/v2.1/miniapp/user/account/:id/`
+
+其中 `:id` 是用户在 `_userprofile` 表中的 `id`。
+
+**参数说明**
+
+Content-Type: `application/json`
+
+| 参数          | 类型   | 必填 | 说明 |
+| :----------- | :----- | :-- | :-- |
+| username     | string | N   | 用户名，不区分大小写 |
+| email        | string | N   | 邮箱，不区分大小写 |
+| new_password | string | N   | 设置用户密码 |
+| phone        | string | N   | 新的手机号 |
+
+如果需要为用户强行**修改密码**, 传入 `new_password` 即可。
+当设置新的手机号时，`phone_verified` 重置为 `false`，需要重新通过验证码进行验证。
+
+> 如想重置用户的 email/username/phone，可以将 email/username/phone 的值设置为 null。
+
+**代码示例**
+
+{% tabs updateSingleUserAccountInfoCurl="Curl", updateSingleUserAccountInfoNode="Node", updateSingleUserAccountInfoPHP="PHP" %}
+
+{% content "updateSingleUserAccountInfoCurl"%}
+
+```shell
+curl -X PUT \
+  https://cloud.minapp.com/oserve/v2.1/miniapp/user/account/70695404/ \
+  -H 'Authorization: Bearer 35919068aa799eccdef19160e1da4bf21381d2a2' \
+  -H 'Content-Type: application/json' \
+  -d '{"username": "pretty_girl"}'
+```
+
+{% content "updateSingleUserAccountInfoNode" %}
+
+```javascript
+var request = require("request");
+
+var options = {
+  method: 'PUT',
+  url: 'https://cloud.minapp.com/oserve/v2.1/miniapp/user/account/70695404/',
+  headers:
+  {
+    'Content-Type': 'application/json',
+    Authorization: 'Bearer 35919068aa799eccdef19160e1da4bf21381d2a2'
+  },
+  body: { 'username': 'pretty_girl' },
+  json: true
+};
+
+var req = request(options, function (error, response, body) {
+  if (error) throw new Error(error);
+  console.log(body);
+});
+```
+
+{% content "updateSingleUserAccountInfoPHP"%}
+
+```php
+<?php
+$token = '35919068aa799eccdef19160e1da4bf21381d2a2';
+$url = "https://cloud.minapp.com/oserve/v2.1/miniapp/user/account/70695404/";
+
+$ch = curl_init();
+$header = [
+  "Authorization: Bearer {$token}",
+  "Content-Type: application/json; charset=utf-8"
+];
+$payload = json_encode([
+  "username" => "pretty_girl_php"]);
+
+curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+curl_setopt($ch, CURLOPT_URL, $url);
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+
+$response = curl_exec($ch);
+$err = curl_error($ch);
+
+curl_close($ch);
+
+if ($err) {
+  echo "CURL Error #:" . $err;
+} else {
+  echo $response;
+}
+```
+
+{% endtabs %}
+
+**返回示例**
+
+```json
+{
+  "email": "pretty_girl@example.com",
+  "email_verified": false,
+  "username": "pretty_girl",
+  "phone": "13800138000",
+  "phone_verified": true
+}
+```
+
+**返回参数说明**
+
+| 参数           |       类型   | 说明 |
+| :------------ | :----------- | :---|
+| email         | string   | 目前的邮箱 |
+| email_verified | boolean  | 邮箱是否已经验证 |
+| username      | string   | 目前的用户名 |
+| phone         | string   | 手机号码|
+| phone_verified | boolean  | 手机号码是否已经验证|
+
+**状态码说明**
+
+`200`: 成功。
+
+`400`: password 错误、email 不合法、username 或 email 已经存在。
 
 `401`: 未授权，请检查请求头中的 Authorization 字段是否正确。
 

@@ -33,7 +33,7 @@
 
 为了使用知晓云提供的后端服务，进入 dashboard 后，开发者首先需要为知晓云授权。
 
-知晓云在设置模块提供了**一键开通**功能，用户只需进入“设置 - 应用 - 平台设置”，在“支付宝小程序”一栏点击**立即开通**并在新开授权回调页填写配置信息完成授权即可。
+知晓云在设置模块提供了**一键授权**功能，用户只需在应用“导览”页中找到支付宝小程序平台，点击**立即接入**，接着在“设置-支付宝”页中填写配置信息完成授权即可。
 
 ![一键开通](/images/newbies/open-up-alipay.png)
 
@@ -45,7 +45,7 @@
 
 ![知晓云服务器域名](/images/newbies/domain-name-config-alipay.png)
 
-登录[小程序后台](https://open.alipay.com/platform/mini.htm#/app/{{appid}}/setting)，进入 “设置 - 开发设置”页面，将知晓云提供给开发者的服务器域名配置到支付宝开发者后台的“服务器域名”配置项中。
+登录[小程序后台](https://open.alipay.com/platform/mini.htm#/app/{{appid}}/setting)，进入 “设置 - 开发设置”页面，将知晓云提供给开发者的服务器域名全部配置到支付宝开发者后台的“服务器域名”配置项中。
 
 ![小程序服务器域名配置](/images/newbies/hydrogen-domain-name-config-alipay.png)
 
@@ -81,7 +81,7 @@ App({
 
 最后，通过初始化 [SDK](/js-sdk/download-sdk.md)，知晓云服务可以验证当前的小程序是否是有效合法的，只有通过验证的小程序才能使用 [SDK](/js-sdk/download-sdk.md) 提供的全部功能。
 
-在知晓云后台 - [**设置模块的小程序面板**](https://cloud.minapp.com/dashboard/#/app/settings/app/)，可获取要接入知晓云服务的小程序 `ClientID`, 按照如下方式进行 [SDK](/js-sdk/download-sdk.md) 初始化:
+在知晓云后台 - [**设置模块的小程序面板**](https://cloud.minapp.com/dashboard/#/app/[[app_id | addSlashPostfixIfNotEmpty]]settings/info/)，可获取要接入知晓云服务的小程序 `ClientID`, 按照如下方式进行 [SDK](/js-sdk/download-sdk.md) 初始化:
 
 <pre>
 <code class="lang-js">
@@ -92,7 +92,7 @@ App({
     require('./sdk-alipay.js')
 
     // 初始化 SDK
-    let clientID = '知晓云管理后台获取到的 ClientID'
+    let clientID = '[[client_id]]'  // 应用名称: [[app_name]]
     my.BaaS.init(clientID)
   }
 })
@@ -125,8 +125,7 @@ Page({
   // 绑定添加书目的提交按钮点击事件，向服务器发送数据
   createBook(e) {
     let bookName = this.data.creatingBookName // 缓存在 data 对象中的输入框输入的书名
-    let tableID = '1' // 从知晓云后台的数据表中获取到的对应数据表的 ID
-    let Books = new my.BaaS.TableObject(tableID) //实例化对应 tableID 的数据表对象
+    let Books = new qq.BaaS.TableObject('bookshelf') //实例化对应 tableName 的数据表对象
     let book = Books.create() // 创建一条记录
 
   // 调用创建数据项接口，进行数据的持久化存储，详见：https://doc.minapp.com/js-sdk/schema/create-record.html
@@ -144,6 +143,6 @@ Page({
 
 同时，我们可以在数据管理模块看到新增的数据项。
 
-![bookshelf 数据表](/images/newbies/bookshelf-schema.jpeg)
+![bookshelf 数据表](/images/newbies/bookshelf-schema.png)
 
 至于更新书名和删除书籍等操作，其接口调用过程大致和创建书籍一样，这里就不再赘述，详见[**演示 demo**](https://github.com/ifanrx/hydrogen-demo/tree/master/alipay-sdk-demo)的源码。

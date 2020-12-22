@@ -1,3 +1,5 @@
+{% import "../macro/sdk-init.md" as sdkInit %}
+
 # 微信小程序接入指南
 
 ## 引入 SDK 并初始化
@@ -9,7 +11,7 @@
 
 ### 添加知晓云 SDK 小程序插件
 
-在小程序的管理后台【设置】-【第三方服务】-【插件管理】中添加插件，根据知晓云 SDK 小程序插件的 AppID 「**wxc6b86e382a1e3294**」搜索到我们的插件，添加后等待审核，审核通过即可使用。
+在[小程序的管理后台](https://mp.weixin.qq.com/)【设置】-【第三方服务】-【插件管理】中添加插件，根据知晓云 SDK 小程序插件的 AppID 「**wxc6b86e382a1e3294**」搜索到我们的插件，添加后等待审核，审核通过即可使用。
 
 ### 在项目配置中声明使用知晓云 SDK 小程序插件
 
@@ -39,24 +41,9 @@
 
 ### 初始化 SDK
 
-```javascript
-wx.BaaS.init(clientID, {autoLogin, logLevel})
-```
+{{ sdkInit.renderIntoPlatform('wechat') }}
 
-**参数说明**
-
-| 参数          | 类型    | 必填 | 说明         |
-| :------------ | :------| ---- | :----------- |
-| clientID      | String |   Y   | 知晓云管理后台获取到的 ClientID |
-| autoLogin     | Boolean |   N   | 请求知晓云接口时，是否自动静默登录，默认为 false |
-| logLevel      | String |   N   | 日志输出级别，共支持 debug、info、warn、error 4 个级别，默认为 error|
-
-> **info**
-> 关于 autoLogin 参数，具体请参考[多平台用户统一登录](./signin-signout.md#多平台用户统一登录) 和 [迁移指南](/js-sdk/migrate-from-v1.md)
-
-通过初始化 SDK ，知晓云服务可以验证当前的小程序是否是有效合法的，只有通过验证的小程序才能使用 SDK 提供的全部功能。
-
-在[知晓云后台 - 我的应用](https://cloud.minapp.com/admin/profile/)页面获取要接入知晓云服务的小程序 ClientID, 按照如下方式进行 SDK 初始化:
+在[知晓云后台 - 我的应用](https://cloud.minapp.com/dashboard/#/app/[[app_id | addSlashPostfixIfNotEmpty]]settings/info/)页面获取要接入知晓云服务的小程序 ClientID, 按照如下方式进行 SDK 初始化:
 
 ```js
 //app.js
@@ -66,7 +53,7 @@ App({
     //让插件帮助完成登录、支付等功能
     wx.BaaS.wxExtend(wx.login, wx.getUserInfo, wx.requestPayment)
 
-    let clientID = '知晓云管理后台获取到的 ClientID'
+    let clientID = '[[client_id]]'  // 应用名称: [[app_name]]
     wx.BaaS.init(clientID)
   }
 })
@@ -83,11 +70,11 @@ b. 将下载解压后得到的 SDK js 文件放在小程序项目目录中
 <pre>
 <code class="lang-js">
 // app.js
+import './sdk-v{{ book.latestVersionWechat }}.js'
 
 App({
   onLaunch() {
-    // require SDK
-    require('./sdk-v{{ book.latestVersionWechat }}')
+    ...
   }
 })
 </code>
@@ -95,24 +82,9 @@ App({
 
 ### 初始化 SDK
 
-```javascript
-wx.BaaS.init(clientID, {autoLogin, logLevel})
-```
+{{ sdkInit.renderIntoPlatform('wechat') }}
 
-**参数说明**
-
-| 参数          | 类型    | 必填 | 说明         |
-| :------------ | :------| ---- | :----------- |
-| clientID      | String |   Y   | 知晓云管理后台获取到的 ClientID |
-| autoLogin     | Boolean |   N   | 请求知晓云接口时，是否自动静默登录，默认为 false |
-| logLevel      | String |   N   | 日志输出级别，共支持 debug、info、warn、error 4 个级别，默认为 error|
-
-> **info**
-> 关于 autoLogin 参数，具体请参考[多平台用户统一登录](./signin-signout.md#多平台用户统一登录) 和 [迁移指南](/js-sdk/migrate-from-v1.md)
-
-通过初始化 SDK ，知晓云服务可以验证当前的小程序是否是有效合法的，只有通过验证的小程序才能使用 SDK 提供的全部功能。
-
-在[知晓云后台 - 我的应用](https://cloud.minapp.com/admin/profile/)页面获取要接入知晓云服务的小程序 ClientID, 按照如下方式进行 SDK 初始化:
+在[知晓云后台 - 我的应用](https://cloud.minapp.com/dashboard/#/app/[[app_id | addSlashPostfixIfNotEmpty]]settings/info/)页面获取要接入知晓云服务的小程序 ClientID, 按照如下方式进行 SDK 初始化:
 
 <pre>
 <code class="lang-js">
@@ -122,7 +94,7 @@ App({
   onLaunch() {
     // 引入 SDK
     require('./sdk-v{{ book.latestVersionWechat }}')
-     let clientID = '知晓云管理后台获取到的 ClientID'
+     let clientID = '[[client_id]]'
      wx.BaaS.init(clientID)
   }
 })
@@ -158,24 +130,9 @@ App({
 
 ### 初始化 SDK
 
-```javascript
-wx.BaaS.init(clientID, {autoLogin, logLevel})
-```
+{{ sdkInit.renderIntoPlatform('wechat') }}
 
-**参数说明**
-
-| 参数          | 类型    | 必填 | 说明         |
-| :------------ | :------| ---- | :----------- |
-| clientID      | String |   Y   | 知晓云管理后台获取到的 ClientID |
-| autoLogin     | Boolean |   N   | 请求知晓云接口时，是否自动静默登录，默认为 false |
-| logLevel      | String |   N   | 日志输出级别，共支持 debug、info、warn、error 4 个级别，默认为 error|
-
-> **info**
-> 关于 autoLogin 参数，具体请参考[多平台用户统一登录](./signin-signout.md#多平台用户统一登录) 和 [迁移指南](/js-sdk/migrate-from-v1.md)
-
-通过初始化 SDK ，知晓云服务可以验证当前的小程序是否是有效合法的，只有通过验证的小程序才能使用 SDK 提供的全部功能。
-
-在[知晓云后台 - 我的应用](https://cloud.minapp.com/admin/profile/)页面获取要接入知晓云服务的小程序 ClientID, 按照如下方式进行 SDK 初始化:
+在[知晓云后台 - 我的应用](https://cloud.minapp.com/dashboard/#/app/[[app_id | addSlashPostfixIfNotEmpty]]settings/info/)页面获取要接入知晓云服务的小程序 ClientID, 按照如下方式进行 SDK 初始化:
 ```js
 // app.js
 
@@ -183,7 +140,7 @@ App({
   onLaunch() {
     // 引入 SDK
     require('minapp-sdk')
-    let clientID = '知晓云管理后台获取到的 ClientID'
+    let clientID = '[[client_id]]'
     wx.BaaS.init(clientID)
   }
 })
@@ -198,11 +155,11 @@ App({
 
 ## 使用 SDK
 
-成功初始化 SDK 后，即可使用 SDK 完成数据操作，内容操作等功能了。如下，在控制台创建一张表（参考[控制台操作-数据表](../dashboard/schema.md) 一节），获取其 tableID ，并插入一条数据。
+通过 `wx.BaaS.init(clientID)` 成功初始化 SDK 后，即可使用 SDK 完成数据操作，内容操作等功能了。如下，在控制台创建一张表（参考[控制台操作-数据表](../dashboard/schema.md) 一节），获取其 tableName ，并插入一条数据。
 
 ```js
-let tableID = 10
-let Product = new wx.BaaS.TableObject(tableID)
+let tableName = 'product'
+let Product = new wx.BaaS.TableObject(tableName)
 let product = Product.create()
 
 let apple = {

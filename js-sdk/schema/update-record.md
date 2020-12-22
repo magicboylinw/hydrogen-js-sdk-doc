@@ -1,4 +1,44 @@
+{% import "/js-sdk/macro/total_count.md" as totalCount %}
+
 # 更新数据项
+
+`BaaS.TableRecord#update(options)`
+
+**参数说明**
+
+options（批量更新时需要设置）:
+
+| 参数          | 类型    | 必填 | 默认 | 说明 |
+| :------------ | :------ | :--- | :--- |:--- |
+| enableTrigger | boolean |  否  | `true` | 是否触发触发器 |
+| withCount     | boolean |  否  | `false` | 是否返回 total_count |
+| expand        | string 或 string[] |  否  | 空字符串 | 是否返回对应字段扩展 |
+
+{{totalCount.withCountTips()}}
+
+<!-- 分隔两个 info -->
+> **info**
+> 更新单条记录，若要使用 `enableTrigger`， 则需要 SDK 3.14.4 及以上版本
+
+<!-- 分隔两个 info -->
+> **info**
+> 临时用户更新数据，请先查看[数据表匿名读写权限特别说明](/js-sdk/schema/#数据表匿名读写权限特别说明)
+
+<!-- 分隔两个 info -->
+> **info**
+> SDK 3.14.5 及以上版本提供单条数据更新返回字段扩展的支持。expand 属性可传入字符串或者包含字符串的数组。例如：
+>
+> `record.update({expand: 'created_by'})`
+>
+> `record.update({expand: ['created_by']})`
+>
+> 有关字段扩展的介绍，请查看[字段扩展](/js-sdk/schema/select-and-expand.html/#字段扩展)。
+
+<!-- 分隔两个 info -->
+> **info**
+> 3.15.1 版本前，数据更新操作会结合用户输入数据以及原有的数据行其余字段数据，使用整个数据对象进行保存；
+
+> 3.15.1 版本后（包含 3.15.1），数据更新操作仅会针对用户输入数据对字段进行单独更新。
 
 ## 操作步骤
 
@@ -19,13 +59,13 @@ tableName 和 tableID 二选一，不能同时存在
 
 | 参数  | 类型              | 必填 | 说明 |
 | :-----  | :----- | :-- | :-- |
-| tableID   | Number | 是  | 数据表的 ID             |
-| tableName | String |  是 | 数据表名（SDK >= 1.2.0） |
+| tableID   | Number | 是  | 数据表的 ID |
+| tableName | String |  是 | 数据表名 |
 
 2.通过数据行 id（以下用 `recordID` 参数名表示） 设置指定数据行
 
 {% ifanrxCodeTabs %}
-`let MyRecord = MyTableObject.getWithoutData(recordID)`
+`let product = MyTableObject.getWithoutData(recordID)`
 {% endifanrxCodeTabs %}
 
 **参数说明**
@@ -50,14 +90,11 @@ a. set 操作
 | value | any               | 是  | 与 key 字段的类型保持一致 |
 | obj   | Object            | 是  | 一次性赋值的键值对对象, 如 `{a: 10, b: 20}` |
 
-b. unset 操作 
+b. unset 操作
 
 将某个字段的值清空
 
 `product.unset(key)` 或 `product.unset(obj)`
-
-> **info**
-> SDK 版本需 >= 1.12.0
 
 **参数说明**
 
@@ -71,7 +108,7 @@ set 和 unset 方法都支持两种类型的赋值操作：
 a. 一次性赋值：
 
 ```js
-MyRecord.set({
+product.set({
   key1: value1,
   key2: value2
 })
@@ -80,20 +117,22 @@ MyRecord.set({
 b. 逐个赋值：
 
 ```js
-MyRecord.set(key1, value1)
-MyRecord.set(key2, value2)
+product.set(key1, value1)
+product.set(key2, value2)
 ```
 
 > **info**
 > 1.对同一字段进行多次 `set` 操作，后面的数据会覆盖掉前面的数据
 >
 > 2.不可同时用 `set` 与 `unset` 操作同一字段，否则会报 605 错误
+>
+> 3.若更新数据中包含 `created_by, created_at, updated_at` 这几个字段，则最终更新完成的数据中这几个字段将以更新数据中设置的字段值为准。
 
 4.将修改后的记录保存到服务器
 
-`MyRecord.update()`
+`product.update()`
 
-通过上面的四个步骤，即完成了一条记录的插入，具体操作阅读以下内容。
+通过上面的四个步骤，即完成了一条记录的更新，具体操作阅读以下内容。
 
 
 ## 普通数据更新
@@ -190,7 +229,7 @@ record.patchObject('obj1', patch)
 ```
 
 
-## 更新 pointer 类型字段 
+## 更新 pointer 类型字段
 
 假设有 product 表, product 表部分字段如下:
 
@@ -361,6 +400,86 @@ order.set('date', 'abc')
 order.update()
 ```
 
+### 从原数组中删除最后一项
+
+`product.pop(key)`
+
+**参数说明**
+
+| 参数   | 类型                | 必填 | 说明 |
+| :---- | :------------------ | :-- | :-- |
+| key   | String              | 是  | 在数据表中的类型必须是 Array |
+
+**请求示例**
+
+{% ifanrxCodeTabs %}
+```js
+let tableName = 'product'
+let recordID = '59897882ff650c0477f00485'
+let Product = new wx.BaaS.TableObject(tableName)
+let product = Product.getWithoutData(recordID)
+product.pop('array_i') // array_i: [1, 2, 3, 4]
+product.update().then(res => {
+  console.log(res) // array_i: [1, 2, 3]
+}).catch(err => {
+  console.log(err)
+})
+```
+{% endifanrxCodeTabs %}
+
+**返回示例**
+```json
+{
+  "status": 200,
+  "data": {
+    "_id": "59897882ff650c0477f00485",
+    "created_at": 1541744690,
+    "created_by": 3,
+    "id": "59897882ff650c0477f00485",
+    "array_i": [1, 2, 3]
+}
+```
+
+### 从原组中删除第一项
+
+`product.shift(key)`
+
+**参数说明**
+
+| 参数   | 类型                | 必填 | 说明 |
+| :---- | :------------------ | :-- | :-- |
+| key   | String              | 是  | 在数据表中的类型必须是 Array |
+
+**请求示例**
+
+{% ifanrxCodeTabs %}
+```js
+let tableName = 'product'
+let recordID = '59897882ff650c0477f00485'
+let Product = new wx.BaaS.TableObject(tableName)
+let product = Product.getWithoutData(recordID)
+product.shift('array_i') // array_i: [1, 2, 3, 4]
+product.update().then(res => {
+  console.log(res) // array_i: [2, 3, 4]
+}).catch(err => {
+  console.log(err)
+})
+```
+{% endifanrxCodeTabs %}
+
+**返回示例**
+```json
+{
+  "status": 200,
+  "data": {
+    "_id": "59897882ff650c0477f00485",
+    "created_at": 1541744690,
+    "created_by": 3,
+    "id": "59897882ff650c0477f00485",
+    "array_i": [2, 3, 4]
+}
+```
+
 ## 按条件批量更新数据项
 
 SDK 1.4.0 及以上版本支持批量更新数据项。可以通过设置自定义查询条件 Query，将符合条件的数据进行批量更新操作。
@@ -428,7 +547,7 @@ then 回调中的 res 对象结构如下：
            "err_msg": "数据更新失败，具体错误信息可联系知晓云微信客服：minsupport3 获取。"
          }
        }
-     ] 
+     ]
   }
 }
 ```
@@ -443,8 +562,16 @@ catch 回调中的 err 对象:
 
 ### 批量更新时不触发触发器
 
-> **info**
-> SDK 版本需 >= 1.9.1
+SDK 1.9.1 及以上版本支持批量更新数据项时不触发触发器。该模式在批量更新数据时，不会触发设置好的触发器，会对查询条件匹配的数据全部更新，没有最多 1000 条的限制。
+
+SDK 2.9.0 及以上版本，在 enableTrigger 为 false 时，SDK 将不会设置默认的 limit （值为 20），如果用户没有设置 limit，则为全量更新。
+
+不触发触发器的情况下会有以下的行为:
+
+- 当更新命中总条目 <= 1000 时，无论 limit 设置为多少，均为同步更新，将返回每一条更新的 id 和更新结果，详见下方返回示例中同步执行部分。
+- 当更新命中总条目 > 1000 时，根据设置 limit 的不同，将有下方两种行为：
+  - limit <= 1000 时，操作记录为同步执行
+  - limit > 1000 或未设置时，则会转为异步执行并移除 limit 限制，变成操作全部
 
 {% ifanrxCodeTabs %}
 ```js
@@ -465,3 +592,55 @@ records.update({enableTrigger: false}).then(res => {}, err => {})
 ```
 
 {% endifanrxCodeTabs %}
+
+**返回示例**
+
+同步操作时，then 回调中的 res 对象结构如下：
+
+```json
+{
+  "statusCode": 200, // 200 表示更新成功, 注意这不代表所有数据都更新成功，具体要看 operation_result 字段
+  "data": {
+    "succeed": 8, // 成功更新记录数
+    "total_count": 10,  // where 匹配的记录数，包括无权限操作记录
+    "offset": 0,
+    "limit": 1000,
+    "next": null, // 下一次更新 url，若为 null 则表示全部更新完毕
+    "operation_result": [  // 创建的详细结果
+       {
+         "success": {      // 成功时会有 success 字段
+           "id": "5bffbab54b30640ba8135650",
+           "updated_at": 1543486133
+         }
+       },
+       {
+         "success": {
+           "id": "5bffbab54b30640ba8135651",
+           "updated_at": 1543486133
+         }
+       },
+       {
+         "error": {     // 失败时会有 error 字段
+           "code": 16837,
+           "err_msg": "数据更新失败，具体错误信息可联系知晓云微信客服：minsupport3 获取。"
+         }
+       }
+     ]
+  }
+}
+```
+
+异步操作时，then 回调中的 res 对象结构如下：
+
+```json
+{
+  "statusCode": 200, // 200 表示更新成功, 注意这不代表所有数据都更新成功，具体要看 operation_result 字段
+  "data": {
+    "statys": "ok",
+    "operation_id": 1 // 可以用来查询到最终执行的结果
+  }
+}
+```
+
+> **info**
+> 获取异步执行结果，请查看接口[文档](/js-sdk/async-job.md)

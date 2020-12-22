@@ -8,13 +8,20 @@
 ![模板消息示例](../../../../images/template-message/template-message.png)
 
 `BaaS.sendTemplateMessage(data)`
-{% else %}
+{% elif platform == 'alipay' %}
 ![模板消息示例](../../../../images/template-message/alipay-template-message.png)
 
 `BaaS.alipay.sendTemplateMessage(data)`
+{% elif platform == 'baidu' %}
+`BaaS.baidu.sendTemplateMessage(data)`
+{% elif platform == 'bytedance' %}
+`BaaS.bytedance.sendTemplateMessage(data)`
+
+> **info**
+> SDK >= 3.7
+{% else %}
+`BaaS.qq.sendTemplateMessage(data)`
 {% endif %}
-
-
 
 **参数说明**
 
@@ -27,30 +34,86 @@ data 是 Object 类型，它包括以下几个属性
 | `<recipient_params>` | Array、Integer、String、Object | 是   | 根据recipient_type来填写不同的参数名， 详见下方表格说明 |
 | template_id     | String | 是   | 模板 ID |
 | submission_type | String | 是   | 模板消息触发条件，`form_id` 或者 `prepay_id` |
-| keywords        | Object | 是   | 关键字（可在 [知晓云-模板消息](https://cloud.minapp.com/dashboard/#/app/template-message/template) 配置）|
+| keywords        | Object | 是   | 关键字（可在 [知晓云-模板消息](https://cloud.minapp.com/dashboard/#/app/[[app_id &#124; addSlashPostfixIfNotEmpty]]template-message/template) 配置）|
 | schema_name     | String | 否   | 数据表名，如果 recipient_type 为 schema_user 则为必填项，表示对该表名的数据表进行用户筛选  |
 | page            | String | 否   | 点击模板卡片后的跳转页面，仅限本小程序内的页面。支持带参数。该字段不填则模板无跳转。|
 | emphasis_keyword| String | 否   | 模板需要放大的关键词，不填则默认无放大，例：keyword1.DATA|
+| can_send_template_message  | Boolean | 否   | 是否过滤无效用户  |
+| template_message_high_value_user  | Boolean | 否   | 是否过滤低价值用户  |
+| can_send_subscription_message  | Boolean | 否   | 是否过滤无效用户  |
+| template_message_rate_limit  | RateLimit | 否   | 发送频率限制  |
+
+{% elif platform == 'baidu' %}
+| 参数             | 类型   | 必填  | 说明 |
+| :-------------- | :----- | :--- | :-- |
+| recipient_type  | String | 是   | 推送类型，可选值： user_id、user_list、user_group、schema_user  |
+| `<recipient_params>` | Array、Integer、String、Object | 是   | 根据recipient_type来填写不同的参数名， 详见下方表格说明 |
+| template_id     | String | 是   | 模板 ID |
+| submission_type | String | 是   | 模板消息触发条件，`form_id` 或者 `order_id` |
+| keywords        | Object | 是   | 关键字（可在 [知晓云-模板消息](https://cloud.minapp.com/dashboard/#/app/[[app_id &#124; addSlashPostfixIfNotEmpty]]template-message/template) 配置）|
+| schema_name     | String | 否   | 数据表名，如果 recipient_type 为 schema_user 则为必填项，表示对该表名的数据表进行用户筛选  |
+| page            | String | 否   | 点击模板卡片后的跳转页面，仅限本小程序内的页面。支持带参数。该字段不填则模板无跳转。|
+| can_send_template_message  | Boolean | 否   | 是否过滤无效用户  |
+| template_message_high_value_user  | Boolean | 否   | 是否过滤低价值用户  |
+| can_send_subscription_message  | Boolean | 否   | 是否过滤无效用户  |
+| template_message_rate_limit  | RateLimit | 否   | 发送频率限制  |
+
+{% elif platform == 'bytedance' %}
+| 参数             | 类型   | 必填  | 说明 |
+| :-------------- | :----- | :--- | :-- |
+| recipient_type  | String | 是   | 推送类型，可选值： user_id、user_list、user_group、schema_user  |
+| `<recipient_params>` | Array、Integer、String、Object | 是   | 根据recipient_type来填写不同的参数名， 详见下方表格说明 |
+| template_id     | String | 是   | 模板 ID |
+| app_name        | AppName | 是   | 应用名称。目前支持 `toutiao`（今日头条） |
+| submission_type | String | 是   | 模板消息触发条件，暂时只支持 `form_id` |
+| keywords        | Object | 是   | 关键字（可在 [知晓云-模板消息](https://cloud.minapp.com/dashboard/#/app/[[app_id &#124; addSlashPostfixIfNotEmpty]]template-message/template) 配置）|
+| schema_name     | String | 否   | 数据表名，如果 recipient_type 为 schema_user 则为必填项，表示对该表名的数据表进行用户筛选  |
+| page            | String | 否   | 点击模板卡片后的跳转页面，仅限本小程序内的页面。支持带参数。该字段不填则模板无跳转。|
+| can_send_template_message  | Boolean | 否   | 是否过滤无效用户  |
+| template_message_high_value_user  | Boolean | 否   | 是否过滤低价值用户  |
+| can_send_subscription_message  | Boolean | 否   | 是否过滤无效用户  |
+| template_message_rate_limit  | RateLimit | 否   | 发送频率限制  |
+
 {% else %}
 | 参数             | 类型   | 必填  | 说明 |
 | :-------------- | :----- | :--- | :-- |
 | recipient_type  | String | 是   | 推送类型，可选值： user_id、user_list、user_group、schema_user  |
 | `<recipient_params>` | Array、Integer、String、Object | 是   | 根据recipient_type来填写不同的参数名， 详见下方表格说明 |
-| template_id     | String | 是   | 模板 ID (在支付宝小程序后台配置) |
+| template_id     | String | 是   | 模板 ID (在小程序后台配置) |
 | submission_type | String | 是   | 模板消息触发条件，`form_id` 或者 `trade_no` |
-| keywords        | Object | 是   | 关键字 (在支付宝小程序后台配置) |
+| keywords        | Object | 是   | 关键字 (在小程序后台配置) |
 | schema_name     | String | 否   | 数据表名，如果 recipient_type 为 schema_user 则为必填项，表示对该表名的数据表进行用户筛选  |
 | page            | String | 是   | 点击模板卡片后的跳转页面，仅限本小程序内的页面。支持带参数。该字段不填则模板无跳转。|
+| can_send_template_message  | Boolean | 否   | 是否过滤无效用户  |
+| template_message_high_value_user  | Boolean | 否   | 是否过滤低价值用户  |
+| can_send_subscription_message  | Boolean | 否   | 是否过滤无效用户  |
+| template_message_rate_limit  | RateLimit | 否   | 发送频率限制  |
+
+{% endif %}
+
+
+{% if platform == 'bytedance' %}
+AppName 支持以下值：
+
+| 名称            | 说明 |
+| :-------------- | :--- |
+| toutiao         | 今日头条 |
 {% endif %}
 
 
 | recipient_type 类型 | recipient_params     | 类型            | 说明                          |
 |:------------------|:---------------------|:--------------|:----------------------------|
 | user_id           | user_id              | Integer       | 推送单个用户，传入用户 ID (对应 _userprofile 表中的 id 字段)              |
-| user_list         | user_list            | Integer Array | 推送批量用户，传入用户 id 列表           |
+| user_list          | user_list            | Integer Array | 推送批量用户，传入用户 id 列表           |
 | user_group        | user_group_name      | String        | 用户组名，注意这里是提交用户组名称，而不是用户组 id |
 | schema_user       | user_profile_filters | String        | 对指定数据表的查询条件，用于筛选用户        |
 
+RateLimit 类型说明:
+
+| 属性            | 类型   | 必填 | 说明 |
+| :-------------- | :----- | :--- | :--- |
+| interval        | Number | 是   | 时间间隔  |
+| limit           | Number | 是   | 每批次发送条数  |
 
 
 **请求示例 - user_id**
@@ -78,8 +141,26 @@ BaaS.sendTemplateMessage(data).then(res => {
 }, err => {
   // 发送失败
 })
-{% else %}
+{% elif platform == 'alipay' %}
 BaaS.alipay.sendTemplateMessage(data).then(res => {
+  // 发送成功
+}, err => {
+  // 发送失败
+})
+{% elif platform == 'baidu' %}
+BaaS.baidu.sendTemplateMessage(data).then(res => {
+  // 发送成功
+}, err => {
+  // 发送失败
+})
+{% elif platform == 'bytedance' %}
+BaaS.bytedance.sendTemplateMessage(data).then(res => {
+  // 发送成功
+}, err => {
+  // 发送失败
+})
+{% else %}
+BaaS.qq.sendTemplateMessage(data).then(res => {
   // 发送成功
 }, err => {
   // 发送失败
@@ -99,8 +180,14 @@ let data = {
 
 {% if platform == 'wechat' %}
 BaaS.sendTemplateMessage(data)
-{% else %}
+{% elif platform == 'alipay' %}
 BaaS.alipay.sendTemplateMessage(data)
+{% elif platform == 'baidu' %}
+BaaS.baidu.sendTemplateMessage(data)
+{% elif platform == 'bytedance' %}
+BaaS.bytedance.sendTemplateMessage(data)
+{% else %}
+BaaS.qq.sendTemplateMessage(data)
 {% endif %}
 ```
 
@@ -119,14 +206,25 @@ let data = {
 
 {% if platform == 'wechat' %}
 BaaS.sendTemplateMessage(data)
-{% else %}
+{% elif platform == 'alipay' %}
 BaaS.alipay.sendTemplateMessage(data)
+{% elif platform == 'baidu' %}
+BaaS.baidu.sendTemplateMessage(data)
+{% elif platform == 'bytedance' %}
+BaaS.bytedance.sendTemplateMessage(data)
+{% else %}
+BaaS.qq.sendTemplateMessage(data)
 {% endif %}
 ```
 
 **请求示例 - schema_user**
 
 schema_user 允许同时存在 user_profile_filters 和 user_group_name 参数
+
+> **info**
+> 如果 `recipient_type` 为 `schema_user` 且参数中包含 `user_group_name` 字段，
+> 则 `user_profile_filters` 字段中，最外层的 `$and` 或 `$or` 不能省略。
+
 
 ```js
 let data = {
@@ -153,8 +251,14 @@ let data = {
 
 {% if platform == 'wechat' %}
 BaaS.sendTemplateMessage(data)
-{% else %}
+{% elif platform == 'alipay' %}
 BaaS.alipay.sendTemplateMessage(data)
+{% elif platform == 'baidu' %}
+BaaS.baidu.sendTemplateMessage(data)
+{% elif platform == 'bytedance' %}
+BaaS.bytedance.sendTemplateMessage(data)
+{% else %}
+BaaS.qq.sendTemplateMessage(data)
 {% endif %}
 ```
 
@@ -166,13 +270,28 @@ BaaS.alipay.sendTemplateMessage(data)
 
 > **info**
 > 如果 `submission_type = 'form_id'`，请确保在调用 `BaaS.sendTemplateMessage` 前，已在小程序端调用 `wx.BaaS.wxReportTicket`上报模版消息所需的 `formId`
-{% else %}
+{% elif platform == 'alipay' %}
 其中 keyword1, keyword2 为支付宝后台中实际关键词对应的键值
 
 ![关键词对应键值示例](/images/template-message/alipay-template-message-keyword.png)
 
 > **info**
 > 如果 `submission_type = 'form_id'`，请确保在调用 `BaaS.alipay.sendTemplateMessage` 前，已在小程序端调用 `my.BaaS.reportTicket`上报模版消息所需的 `formId`
+{% elif platform == 'baidu' %}
+其中 keyword1, keyword2 为百度后台中实际关键词对应的键值
+
+> **info**
+> 如果 `submission_type = 'form_id'`，请确保在调用 `BaaS.baidu.sendTemplateMessage` 前，已在小程序端调用 `swan.BaaS.reportTicket`上报模版消息所需的 `formId`
+{% elif platform == 'bytedance' %}
+其中 keyword1, keyword2 为字节跳动小程序后台中实际关键词对应的键值
+
+> **info**
+> 如果 `submission_type = 'form_id'`，请确保在调用 `BaaS.bytedance.sendTemplateMessage` 前，已在小程序端调用 `tt.BaaS.reportTicket`上报模版消息所需的 `formId`
+{% else %}
+其中 keyword1, keyword2 为 QQ 后台中实际关键词对应的键值
+
+> **info**
+> 如果 `submission_type = 'form_id'`，请确保在调用 `BaaS.qq.sendTemplateMessage` 前，已在小程序端调用 `qq.BaaS.reportTicket`上报模版消息所需的 `formId`
 {% endif %}
 
 

@@ -1,82 +1,24 @@
-# 云函数
+# 什么是云函数
+知晓云云函数是无服务器（Serverless）架构的典型实现，使用它无需自行配置或管理服务器即可运行代码。
 
-什么是云函数？
+云函数只在需要的时候执行你的代码并自动进行服务资源缩放，无论是一天几个请求，还是一秒钟几千个请求，都应对自如。更赞的是，**你只需要按实际运行代码所消耗的计算时间付费，没有运行时不产生任何费用**。
 
-云函数可以帮助你在没有购买和管理服务器时仍能运行代码。你只需要进行核心代码的编写及设置代码运行的条件，代码即可在知晓云云基础设施上自动、安全地运行。
+使用云函数时，你只需要编写代码。知晓云将完全管理底层计算资源，包括服务器 CPU、内存、网络及其他配置；在对这些资源维护的同时，代码部署、弹性扩容/缩容、负载均衡、系统安全升级、资源使用情况等都一并处理。
 
-对开发者的意义？
+云函数运行的时机完全由你自行掌控，例如，使用触发器，让数据库增删改事件发生时执行云函数、让文件上传或删除时执行云函数；亦或是通过 SDK 在小程序里或 web 页面上直接调用执行，甚至指定一个时间周期让云函数定期执行。基于此，不仅可以实现事件驱动型的业务逻辑，更可以将云函数灵活地运用在一些需要后端环境保障权限、安全性的场景里，让业务开发在高效快速的同时也能安全可靠。
 
-你只需编写简单的、目的单一的云函数，并将它与其他功能（如触发器、定时任务）产生的事件关联起来。即可在小程序上实现更加复杂的业务逻辑，如订单的自动化取消、自动发货、自动扣减库存等等。
-使用知晓云可以完成市面上全部类型的小程序实现，真正做到不需要管服务器维护服务的事情，极大降低运维成本，在快速实现功能的基础上，仍然保留了极强的水平扩展能力。
-
-# Node.js SDK
-
+## 云函数支持的开发语言
 目前知晓云云函数支持的 Node.js 开发语言包括如下版本：
-- Node.js 8.9
+
+- Node.js 12
+
+## 第一次使用云函数？
+如果你是第一次接触云函数，我们建议你按顺序阅读以下内容：
+
+* [快速上手](/cloud-function/node-sdk/start/quick-start.md)
+* [代码格式](/cloud-function/node-sdk/start/code-format.md)
+* [async/await](/cloud-function/node-sdk/start/async-await.md)
+* [Node JS 事件循环机制](/cloud-function/node-sdk/start/nodejs-event-loop.md)
+* [技术细节](/cloud-function/node-sdk/start/technical-notes.md)
 
 
-## 代码编写格式
-
-在云函数中使用 Node.js 编程，需要定义一个 Node.js 函数作为入口，一个简单的函数定义如下：
-
-```js
-exports.main = function helloWorld(event, callback) {
-  let name = event.data.name
-  callback(null, 'hello ' + name)
-}
-```
-
-## 参数介绍
-
-**event**
-
-此参数包含了触发事件的相关数据:
-
-| 包含字段         | 类型            | 说明 |
-| :-------------- | :------------- | :-- |
-| data            | 任何 js 合法类型 | 在用户调用云函数时传入的参数 |
-| eventType       | String         | 提供给用户的触发来源的信息，包括http-call/event-payment/event-data/event-schedule |
-| jobId           | Number         | 当前函数执行的 id |
-| memoryLimitInMB | Number         | 当前函数的内存资源限制 |
-| miniappId       | Number         | 云函数所属小程序 id |
-| request         | Object         | 若云函数请求来自 BaaS SDK, 此处存储请求用户及其他客户端信息 |
-| timeLimitInMS   | Number         | 当前函数的 timeout 时间 |
-
-
-**callback**
-
-可选项。使用此参数用于将你所希望的信息返回给调用方。格式如 `callback(err, data)`，err 为错误信息，可为 Error 类型或字符串，没有出错的情况下，可设置为 null；data 为函数成功执行的结果信息。
-
-
-## 日志
-
-你可以在程序中使用如下几种不同的日志级别来完成日志输出:
-
-```js
-console.log(message)
-console.error(message)
-console.warn(message)
-console.info(message)
-```
-
-日志格式为：ISOString + 日志级别 + message，如下示例：
-
-```
-2017-07-05T05:13:35.920Z INFO hello world
-```
-
-## 已包含的库及使用方法
-
-目前支持在云函数中对知晓云中的数据，内容和文件进行操作，同时也支持调用其它云函数，发送邮件和模板消息等功能，使用如下：
-
-```js
-exports.main = function (event, callback) {
-  let AddressBook = new BaaS.TableObject(7)
-
-  AddressBook.get('591c2b89ae63c874d6e37bc7').then(res => {
-    callback(null, res.data)
-  }, err => {
-    callback(err)
-  })
-}
-```

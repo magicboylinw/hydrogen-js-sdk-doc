@@ -1,3 +1,18 @@
+{% import "/js-sdk/macro/total_count.md" as totalCount %}
+
+{% macro filter() %}
+文件查询与[数据表查询](../schema/query.md)方法一致，但只支持以下指定字段的筛选
+
+| 支持字段       |  类型  | 说明 |
+| :------------ | :----- | :--- |
+| id            | String | 文件 id |
+| name          | String | 文件名 |
+| size          | Number | 文件大小，以字节为单位 |
+| category_id   | String | 文件分类 id |
+| category_name | String | 文件分类名 |
+| created_at    | Integer| 创建时间 （格式为 unix 时间戳） |
+{% endmacro %}
+
 # 文件操作
 
 实例化一个 `BaaS.File` 对象，以下操作都是在该对象上进行操作，如下进行实例化：
@@ -6,7 +21,7 @@
 `let MyFile = new wx.BaaS.File()`
 {% endifanrxCodeTabs %}
 
-### 文件上传
+## 文件上传
 
 `MyFile.upload(fileParams, metaData)`
 
@@ -35,14 +50,15 @@ res.data:
 |   参数  | 类型   | 说明 |
 | :----- | :----- | :-- |
 | status | String | 成功返回 'ok' |
-| path   | String | 上传后的文件地址 |
+| path   | String | 上传成功后的访问地址 URL |
 | file   | Object | 包含文件详细信息，详见以下 |
 
 file 参数说明：
 
 | 参数        |  类型  | 说明 |
 | :--------- | :----- | :------ |
-| cdn_path   | String | 文件在 cdn 上的路径 |
+| path       | String | 上传成功后的访问地址 URL (v2.2.0 版本新增) |
+| cdn_path   | String | 文件在 CDN 中的相对路径 |
 | created_at | String | 文件上传时间 |
 | id         | Object | 文件 ID |
 | mime_type  | String | 文件媒体类型 |
@@ -177,7 +193,7 @@ HError 对象结构请参考[错误码和 HError 对象](/js-sdk/error-code.md)
 > file 字段可用于含有 file 类型的数据表的数据操作，详细见 [新增数据项](../schema/create-record.md)
 
 
-### 获取文件详情
+## 获取文件详情
 
 `MyFile.get(fileID)`
 
@@ -198,7 +214,8 @@ res.data:
 | id         | Object | 文件 ID |
 | mime_type  | String | 文件媒体类型 |
 | name       | String | 文件名 |
-| path       | String | 文件在 cdn 上的路径 |
+| path       | String | 上传成功后的访问地址 URL |
+| cdn_path   | String | 文件在 CDN 中的相对路径 (v2.2.0 新增) |
 | size       | Number | 以字节为单位 |
 
 category 参数说明：
@@ -241,7 +258,7 @@ HError 对象结构请参考[错误码和 HError 对象](/js-sdk/error-code.md)
 ```
 
 
-### 删除文件
+## 删除文件
 
 `MyFile.delete(fileID)`
 
@@ -266,8 +283,45 @@ MyFile.delete(['5a2fe93308443e313a428c4c', '5a2fe93308443e313a428c4d']).then()
 > **info**
 > 删除单个文件，如果权限不足，会返回 401；删除多个文件，如果权限不足，则直接跳过该文件
 
+## 获取符合条件的文件总数
 
-### 查询，获取文件列表
+`BaaS.File#count()`
+
+> **info**
+> SDK v3.0 新增
+
+{{filter()}}
+
+{% ifanrxCodeTabs comment="目前会自动将 wx.BaaS 替换为 window 和 my"  %}
+```js
+let MyFile = new wx.BaaS.File()
+let query = new wx.BaaS.Query()
+query.compare('category_name', '=', categoryName)
+query.contains('name', substr)
+MyFile.setQuery(query).count().then(num => {
+  // success
+  console.log(num)  // 10
+}, err => {
+  // err
+})
+```
+{% endifanrxCodeTabs %}
+
+## 查询，获取文件列表
+
+`BaaS.File#find(options)`
+
+**参数说明**
+
+options:
+
+| 参数          | 类型    | 必填 | 默认 | 说明 |
+| :------------ | :------ | :--- | :--- |:--- |
+| withCount     | boolean |  否  | `false` (SDK v3.x) / `true` (SDK v2.x) | 是否返回 total_count |
+
+{{totalCount.withCountTips()}}
+
+{{filter()}}
 
 文件查询与[数据表查询](../schema/query.md)方法一致，但只支持以下指定字段的筛选
 
@@ -369,7 +423,7 @@ MyFile.limit(10).offset(5).find().then()
 }
 ```
 
-### 图片云处理
+## 图片云处理
 
 利用 CDN 图片云处理，可以快速便捷地完成图片缩放、裁切、打水印等操作，示例如下：
 
@@ -383,7 +437,7 @@ https://cloud-minapp-7894.cloud.ifanrusercontent.com/1eiuEUuISgOstoVZ.png!/water
 
 具体用法和更多功能可查看文档：[如何通过图片 URL 进行图片云处理？](http://support.minapp.com/hc/kb/article/1082737/)
 
-### 视频截图
+## 视频截图
 
 > **info**
 > SDK 版本要求 >= 1.16.0
@@ -409,7 +463,7 @@ res:
 | 参数        | 类型   | 说明 |
 | :--------- | :----- | :------ |
 | created_at   | Integer | 创建时间 （格式为 unix 时间戳) |
-| path   | String | 路径 |
+| path   | String | 上传成功后的访问地址 URL |
 | created_by   | Integer | 创建者 id |
 | mime_type   | String | mime_type 类型 |
 | media_type   | String | 媒体类型 |
@@ -417,7 +471,7 @@ res:
 | name   | String | 文件名 |
 | status   | String | 文件状态 |
 | reference   | String | 引用 |
-| cdn_path   | String | cdn 中保存的路径 |
+| cdn_path   | String | 文件在 CDN 中的相对路径 |
 | updated_at   | Integer | 更新时间 （格式为 unix 时间戳) |
 | categories   | String | 文件所属类别 |
 | _id   | String | 本条记录 ID |
@@ -462,7 +516,7 @@ HError 对象结构请参考[错误码和 HError 对象](/js-sdk/error-code.md)
 }
 ```
 
-### M3U8 视频拼接
+## M3U8 视频拼接
 
 > **info**
 > SDK 版本要求 >= 1.16.0
@@ -486,7 +540,7 @@ res:
 | 参数        | 类型   | 说明 |
 | :--------- | :----- | :------ |
 | created_at   | Integer | 创建时间 （格式为 unix 时间戳) |
-| path   | String | 路径 |
+| path   | String | 上传成功后的访问地址 URL |
 | created_by   | Integer | 创建者 id |
 | mime_type   | String | mime_type 类型 |
 | media_type   | String | 媒体类型 |
@@ -494,7 +548,7 @@ res:
 | name   | String | 文件名 |
 | status   | String | 文件状态 |
 | reference   | String | 引用 |
-| cdn_path   | String | cdn 中保存的路径 |
+| cdn_path   | String | 文件在 CDN 中的相对路径 |
 | updated_at   | Integer | 更新时间 （格式为 unix 时间戳) |
 | categories   | String | 文件所属类别 |
 | _id   | String | 本条记录 ID |
@@ -538,7 +592,7 @@ HError 对象结构请参考[错误码和 HError 对象](/js-sdk/error-code.md)
 }
 ```
 
-### M3U8 视频剪辑
+## M3U8 视频剪辑
 
 > **info**
 > SDK 版本要求 >= 1.16.0
@@ -566,7 +620,7 @@ res:
 | 参数        | 类型   | 说明 |
 | :--------- | :----- | :------ |
 | created_at   | Integer | 创建时间 （格式为 unix 时间戳) |
-| path   | String | 路径 |
+| path   | String | 上传成功后的访问地址 URL |
 | created_by   | Integer | 创建者 id |
 | mime_type   | String | mime_type 类型 |
 | media_type   | String | 媒体类型 |
@@ -574,7 +628,7 @@ res:
 | name   | String | 文件名 |
 | status   | String | 文件状态 |
 | reference   | String | 引用 |
-| cdn_path   | String | cdn 中保存的路径 |
+| cdn_path   | String | 文件在 CDN 中的相对路径 |
 | updated_at   | Integer | 更新时间 （格式为 unix 时间戳) |
 | categories   | String | 文件所属类别 |
 | _id   | String | 本条记录 ID |
@@ -620,7 +674,7 @@ HError 对象结构请参考[错误码和 HError 对象](/js-sdk/error-code.md)
 }
 ```
 
-### M3U8 时长和分片信息
+## M3U8 时长和分片信息
 
 > **info**
 > SDK 版本要求 >= 1.16.0
@@ -700,7 +754,7 @@ HError 对象结构请参考[错误码和 HError 对象](/js-sdk/error-code.md)
 }
 ```
 
-### 音视频的元信息
+## 音视频的元信息
 
 > **info**
 > SDK 版本要求 >= 1.16.0

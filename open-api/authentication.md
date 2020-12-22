@@ -8,6 +8,14 @@
   Authorization: Bearer <Access Token>
 ```
 
+若开发者需要在发起 API 请求时进行测试环境的指定，则需要在 HTTP Header 中加入以下环境参数：
+
+```
+  X-Hydrogen-Env-ID: <Env ID>
+```
+
+在不指定环境参数的情况下，默认调用生产环境的 API。
+
 
 ## 授权流程
 
@@ -133,8 +141,8 @@ Content-Type: `application/json`
     uri: 'https://cloud.minapp.com/api/oauth2/hydrogen/openapi/authorize/',
     method: 'POST',
     json: {
-      client_id: 'a4d2d62965ddb57fa4xx',
-      client_secret: 'e5802b40135baab9b4e84e35bed058a264c37dxx'
+      client_id: '[[client_id]]',
+      client_secret: '{{client_secret}}'
     },
     jar: true,                // 允许记住 cookie 
     followAllRedirects: true,     // 允许重定向
@@ -150,8 +158,8 @@ Content-Type: `application/json`
       uri: 'https://cloud.minapp.com/api/oauth2/access_token/',
       method: 'POST',
       json: {
-        client_id: 'a4d2d62965ddb57fa4xx',
-        client_secret: 'e5802b40135baab9b4e84e35bed058a264c37dxx',
+        client_id: '[[client_id]]',
+        client_secret: '{{client_secret}}',
         grant_type: 'authorization_code',
         code,
       }
@@ -252,8 +260,8 @@ Content-Type: `application/json`
       uri: 'https://cloud.minapp.com/api/oauth2/access_token/',
       method: 'POST',
       json: {
-        client_id: 'a4d2d62965ddb57fa4xx',
-        client_secret: 'e5802b40135baab9b4e84e35bed058a264c37dxx',
+        client_id: '[[client_id]]',
+        client_secret: '{{client_secret}}',
         grant_type: 'refresh_token',
         refresh_token: refreshToken,
       }

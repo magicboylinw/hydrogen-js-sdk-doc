@@ -4,7 +4,7 @@
 
 **接口**
 
-`GET https://cloud.minapp.com/userve/v1/file/:file_id/`
+`GET https://cloud.minapp.com/userve/v2.2/file/:file_id/`
 
 其中 `:file_id` 需替换为你的文件 ID
 
@@ -15,7 +15,7 @@ var axios = require('axios').create({
   withCredentials: true
 })
 
-axios.get('https://cloud.minapp.com/userve/v1/file/5a1ba9c1fff1d651135e5ff1/').then(res => {
+axios.get('https://cloud.minapp.com/userve/v2.2/file/5a1ba9c1fff1d651135e5ff1/').then(res => {
   console.log(res.data)
 })
 ```
@@ -47,7 +47,11 @@ axios.get('https://cloud.minapp.com/userve/v1/file/5a1ba9c1fff1d651135e5ff1/').t
 
 **接口**
 
-`GET https://cloud.minapp.com/userve/v1/file/`
+`GET https://cloud.minapp.com/userve/v2.2/file/`
+
+> **info**
+> 该接口支持通过参数 return_total_count 指定是否返回查询对象总数，以协助不关心对象总数只关心查询结果列表的开发者提升接口响应速度。
+同时，从 v2.2 版本开始该接口默认不返回查询对象总数，欲获取总数的开发者需要显式指定 return_total_count 参数。
 
 **参数说明**
 
@@ -58,6 +62,15 @@ Content-Type: `application/json`
 | order_by | String | Y   | 排序（支持 `created_at` 进行排序）|
 | limit    | Number | N   | 限制返回资源的个数，默认为 20 条，最大可设置为 1000 |
 | offset   | Number | N   | 设置返回资源的起始偏移值，默认为 0 |
+| return_total_count   | Number | N   | 返回结果 meta 中是否返回 total_count，1 为返回，0 为不返回，默认不返回 |
+
+若开发者只需要获取对象总数，则可以通过设置 `limit=1` 以及 `return_total_count=1` 来达到该效果，total_count 可从返回的 meta 中获取
+
+请求示例：
+
+```
+https://cloud.minapp.com/userve/v2.2/file/?limit=1&return_total_count=1
+```
 
 **代码示例**
 
@@ -66,7 +79,7 @@ var axios = require('axios').create({
   withCredentials: true
 })
 
-axios.get('https://cloud.minapp.com/userve/v1/file/', {
+axios.get('https://cloud.minapp.com/userve/v2.2/file/', {
   params: {
     order_by: '-created_at',
     category: '5a1ba7b708443e7fc5f2fb18'
@@ -80,7 +93,7 @@ axios.get('https://cloud.minapp.com/userve/v1/file/', {
 
 **接口**
 
-`DELETE https://cloud.minapp.com/userve/v1/file/:file_id/`
+`DELETE https://cloud.minapp.com/userve/v2.2/file/:file_id/`
 
 其中 `:file_id` 需替换为你的文件 ID
 
@@ -91,7 +104,7 @@ var axios = require('axios').create({
   withCredentials: true
 })
 
-axios.delete('https://cloud.minapp.com/userve/v1/file/5a1ba9c1fff1d651135e5ff1/').then(res => {
+axios.delete('https://cloud.minapp.com/userve/v2.2/file/5a1ba9c1fff1d651135e5ff1/').then(res => {
   console.log(res.data)
 })
 ```
@@ -104,7 +117,7 @@ axios.delete('https://cloud.minapp.com/userve/v1/file/5a1ba9c1fff1d651135e5ff1/'
 
 **接口**
 
-`DELETE https://cloud.minapp.com/userve/v1/file/?id__in=:file1_id,:file2_id`
+`DELETE https://cloud.minapp.com/userve/v2.2/file/?id__in=:file1_id,:file2_id`
 
 **代码示例**
 
@@ -113,7 +126,7 @@ var axios = require('axios').create({
   withCredentials: true
 })
 
-axios.delete('https://cloud.minapp.com/userve/v1/file/', {
+axios.delete('https://cloud.minapp.com/userve/v2.2/file/', {
   params: {
     id__in: '5a1ba9c1fff1d651135e5ff1,59ca3d275f281f58523fc47a'
   }
@@ -149,7 +162,7 @@ axios.delete('https://cloud.minapp.com/userve/v1/file/', {
 | 参数        | 类型   | 说明 |
 | :--------- | :----- | :------ |
 | created_at   | Integer | 创建时间 （格式为 unix 时间戳) |
-| path   | String | 路径 |
+| path   | String | 上传成功后的访问地址 URL |
 | created_by   | Integer | 创建者 id |
 | mime_type   | String | mime_type 类型 |
 | media_type   | String | 媒体类型 |
@@ -157,7 +170,7 @@ axios.delete('https://cloud.minapp.com/userve/v1/file/', {
 | name   | String | 文件名 |
 | status   | String | 文件状态 |
 | reference   | Object | 引用 |
-| cdn_path   | String | cdn 中保存的路径 |
+| cdn_path   | String | 文件在 CDN 中的相对路径 |
 | updated_at   | Integer | 更新时间 （格式为 unix 时间戳) |
 | categories   | String | 文件所属类别 |
 | id   | String | 本条记录 ID |
@@ -230,7 +243,7 @@ axios.post('https://cloud.minapp.com/userve/v1/media/video-snapshot/', {
 | 参数        | 类型   | 说明 |
 | :--------- | :----- | :------ |
 | created_at   | Integer | 创建时间 （格式为 unix 时间戳) |
-| path   | String | 路径 |
+| path   | String | 上传成功后的访问地址 URL |
 | created_by   | Integer | 创建者 id |
 | mime_type   | String | mime_type 类型 |
 | media_type   | String | 媒体类型 |
@@ -238,7 +251,7 @@ axios.post('https://cloud.minapp.com/userve/v1/media/video-snapshot/', {
 | name   | String | 文件名 |
 | status   | String | 文件状态 |
 | reference   | Object | 引用 |
-| cdn_path   | String | cdn 中保存的路径 |
+| cdn_path   | String | 文件在 CDN 中的相对路径 |
 | updated_at   | Integer | 更新时间 （格式为 unix 时间戳) |
 | categories   | String | 文件所属类别 |
 | id   | String | 本条记录 ID |
@@ -313,7 +326,7 @@ axios.post('https://cloud.minapp.com/userve/v1/media/m3u8-concat/', {
 | 参数        | 类型   | 说明 |
 | :--------- | :----- | :------ |
 | created_at   | Integer | 创建时间 （格式为 unix 时间戳) |
-| path   | String | 路径 |
+| path   | String | 上传成功后的访问地址 URL |
 | created_by   | Integer | 创建者 id |
 | mime_type   | String | mime_type 类型 |
 | media_type   | String | 媒体类型 |
@@ -321,7 +334,7 @@ axios.post('https://cloud.minapp.com/userve/v1/media/m3u8-concat/', {
 | name   | String | 文件名 |
 | status   | String | 文件状态 |
 | reference   | Object | 引用 |
-| cdn_path   | String | cdn 中保存的路径 |
+| cdn_path   | String | 文件在 CDN 中的相对路径 |
 | updated_at   | Integer | 更新时间 （格式为 unix 时间戳) |
 | categories   | String | 文件所属类别 |
 | id   | String | 本条记录 ID |

@@ -1,4 +1,34 @@
+{% import "/js-sdk/macro/total_count.md" as totalCount %}
+
 # 删除数据项
+
+删除单条数据：
+
+`BaaS.TableObject#delete(recordID, options)`
+
+删除多条数据：
+
+`BaaS.TableObject#delete(query, options)`
+
+**参数说明**
+
+| 参数     | 类型   | 必填 | 说明    |
+| :------- | :----- | :--- |:------- |
+| recordID | string |  是  | 记录 ID |
+| query    | Query  |  是  | Query 查询条件对象 |
+
+options（类型：Object，批量删除时需要设置），属性说明:
+
+| 属性          | 类型    | 必填 | 默认 | 说明 |
+| :------------ | :------ | :--- | :--- |:--- |
+| enableTrigger | boolean |  否  | true | 是否触发触发器 |
+| withCount     | boolean |  否  | `false` | 是否返回 total_count |
+
+{{totalCount.withCountTips()}}
+
+<!-- 分隔两个 info -->
+> **info**
+> 临时用户删除数据，请先查看[数据表匿名读写权限特别说明](/js-sdk/schema/#数据表匿名读写权限特别说明)
 
 ## 操作步骤
 
@@ -93,7 +123,7 @@ let query = new wx.BaaS.Query()
 MyTableObject.limit(10).offset(0).delete(query).then(res => {
   console.log(res)
 }, err => {
-  console.log(err)  
+  console.log(err)
 })
 ```
 {% endifanrxCodeTabs %}
@@ -126,6 +156,17 @@ err 对象结构请参考[错误码和 HError 对象](/js-sdk/error-code.md)
 
 ### 批量删除时不触发触发器
 
+SDK 1.9.1 及以上版本支持批量删除数据项时不触发触发器。该模式在批量删除数据时，不会触发设置好的触发器，会对查询条件匹配的数据全部更新，没有最多 1000 条的限制。
+
+SDK 2.9.0 及以上版本，在 enableTrigger 为 false 时，SDK 将不会设置默认的 limit （值为 20），如果用户没有设置 limit，则为全量删除。
+
+批量删除不触发触发器的情况下会有以下的行为:
+
+- 当删除命中总条目 <= 1000 时，无论 limit 设置为多少，均为同步删除，将返回删除结果，详见下方返回示例中同步执行部分。
+- 当删除命中总条目 > 1000 时，根据设置 limit 的不同，将有下方两种行为：
+  - limit <= 1000 时，操作记录为同步执行
+  - limit > 1000 或未设置时，则会转为异步执行并移除 limit 限制，变成操作全部
+
 ```js
 // 知晓云后台设置的触发器将不会被触发
 MyTableObject.delete(query, {enableTrigger: false}).then(res => {
@@ -134,3 +175,35 @@ MyTableObject.delete(query, {enableTrigger: false}).then(res => {
   //err 为 HError 对象
 })
 ```
+
+**返回示例**
+
+同步操作时，then 回调中的 res 对象结构如下：
+
+```json
+{
+  "statusCode": 200,
+  "data": {
+    "succeed": 8, // 成功删除记录数
+    "total_count": 10, // where 匹配的记录数，包括无权限操作记录
+    "offset": 0,
+    "limit": 10,
+    "next": null // 下一次删除 url，若为 null 则表示全部删除完毕
+  }
+}
+```
+
+异步操作时，then 回调中的 res 对象结构如下：
+
+```json
+{
+  "statusCode": 200,
+  "data": {
+    "statys": "ok",
+    "operation_id": 1 // 可以用来查询到最终执行的结果
+  }
+}
+```
+
+> **info**
+> 获取异步执行结果，请查看接口[文档](/js-sdk/async-job.md)

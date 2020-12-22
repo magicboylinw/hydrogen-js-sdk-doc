@@ -1,6 +1,165 @@
-# 获取用户信息
+{% import "/cloud-function/node-sdk/macro/total_count.md" as totalCount %}
+{% macro modifiableField() %}
+支持更新的字段：
+
+1. `_userprofile` 表所有用户定义字段
+
+2. `nickname`
+
+3. `gender`
+
+4. `country`
+
+5. `province`
+
+6. `city`
+
+7. `language`
+
+8. `avatar`
+{% endmacro %}
+
+# 用户
 
 `let MyUser = new BaaS.User()`
+
+## 创建用户
+
+> **info**
+> SDK >= 3.9
+
+### 操作步骤
+
+1.本地创建用户
+
+`let user = MyUser.create()`
+
+2.为上面创建的用户设置属性
+
+`user.set(data)`
+
+该方法支持两种类型的赋值操作：
+
+a.一次性赋值：
+
+```js
+user.set({
+  key1: value1,
+  key2: value2
+})
+```
+
+b.逐个赋值
+
+```js
+user.set(key1, value1)
+user.set(key2, value2)
+```
+
+支持的属性：
+
+| 属性            | 类型    | 必填 | 说明 |
+| :-------------- | :------ | :--- | :--- |
+| _username        | String  | `_username`、`_phone`、`_email`、`_provider` 其中至少一项必填  | 用户名 |
+| _phone          | String  | `_username`、`_phone`、`_email`、`_provider` 其中至少一项必填  | 手机号 |
+| _email           | String  | `_username`、`_phone`、`_email`、`_provider` 其中至少一项必填  | 邮箱 |
+| _provider   | Object | `_username`、`_phone`、`_email`、`_provider` 其中至少一项必填 | 用户在平台方的用户信息，具体用法请参考 `_provider 传入说明` |
+| _password        | String  | 传入了 `_username`、`_email` 时必填  | 密码 |
+| _phone_verified  | Boolean | 否 | 手机号是否已验证 |
+| _email_verified   | Boolean | 否 | 邮箱是否已验证 |
+| avatar          | String  | 否 | 用户头像 |
+| nickname        | String  | 否 | 用户昵称 |
+| gender          | Integer | 否 | 用户性别，可选值包括：0(未知)、1(男性)、2(女性) |
+| country         | String  | 否 | 国家 |
+| province        | String  | 否 | 省份 |
+| city            | String  | 否 | 城市 |
+| language        | String  | 否 | 语言 |
+| is_authorized        | Boolean  | 否 | 微信是否授权，默认为 `undefined` |
+
+除了以上字段外，还支持用户表的自定义字段
+
+> **info**
+> 对同一字段进行多次 `set` 操作，后面的数据会覆盖掉前面的数据
+
+**_provider 传入说明**
+
+在传入 `_provider` 的时候，如传入的参数不符合规范，则不会写入数据库中，正确的格式如下：
+
+```js
+{
+  '_provider': {
+    'platform': {
+      'keyword': ''
+    }
+  }
+}
+```
+
+> **info**
+> 在传入了 _provider 的同时，也传入了 `_username`，`_email` 其中一个，则必须传入有效的 `_password`
+
+`keyword` 必须传入平台支持的有效值：`[openid, unionid, user_id]`。
+
+而 `platform` 必须在支持的平台范围内，目前支持的平台如下：
+
+| 名称            | 平台 | keyword 有效值 |
+| :-------------- | :---      | :--- |
+| wechat          | 微信小程序 | `openid`，`unionid`（非必填）| 
+| qq_miniapp      | QQ 小程序   | `openid`          | 
+| baidu_miniapp   | 百度小程序  | `openid`          | 
+| douyin          | 抖音小程序  | `openid`          | 
+| toutiao         | 头条小程序  | `openid`          | 
+| bytedance_devtools | 字节跳动小程序开发者工具| `openid`| 
+| news_article_lite | 头条极速版小程序| `openid`      |
+| jd_miniapp      | 京东小程序  | `openid`          | 
+| alipay          | 支付宝小程序 | `user_id`        | 
+| oauth_wechat_mp | 微信公众号  | `openid`，`unionid`（非必填）| 
+| oauth_wechat_web | 微信网页版 | `openid`，`unionid`（非必填）| 
+| oauth_weibo     | 微博用户  | `openid`            | 
+| oauth_weibo_native | 微博客户端 | `openid`        | 
+| oauth_wechat_native | 微信客户端| `openid`，`unionid`（非必填）| 
+| oauth_apple_native | 苹果客户端 | `openid`        | 
+
+4.将创建的用户保存到服务器
+
+`user.save()`
+
+通过上面的四个步骤，即完成了一个用户的创建。
+
+
+**请求示例**
+
+```js
+const MyUser = new BaaS.User()
+const user = MyUser.create()
+user.set({
+  _email: '***',
+  _password: '***',
+})
+const res = await user.save()
+```
+
+**返回示例**
+
+```json
+{
+  "status": 200,
+  "data": {
+    "_email_verified": false,
+    "_group": [],
+    "_phone_verified": false,
+    "_provider": {},
+    "_email": "***",
+    "avatar": "https://media.ifanrusercontent.com/hydrogen/default_avatar.png",
+    "can_send_alipay_template_message": false,
+    "can_send_wechat_template_message": false,
+    "created_at": 1590463229,
+    "created_by": 180889312739596,
+    "id": 180889312739596,
+    "updated_at": 1590463229,
+  }
+}
+```
 
 ## 获取指定用户信息
 
@@ -172,7 +331,9 @@ MyUser.expand(['pointer_test_oder']).select(['nickname', 'pointer_test_order']).
 
 ### 更新用户信息
 
-更新用户信息与[数据表更新数据项](./schema/update-record.md)方法基本一致。这里只支持对 _userprofile 表中自定义的字段进行更新。
+更新用户信息与[数据表更新数据项](./schema/update-record.md)方法基本一致。
+
+{{modifiableField()}}
 
 **请求示例**
 
@@ -187,9 +348,352 @@ user.set('age', 30).update().then(res => {
 }, err => {
   // err
 })
-``` 
+```
+
+### 设置账号信息
+
+`UserRecord.setAccount({username, email, password})`
+
+通过微信、支付宝授权登录用户，可以设置用户名、邮箱、密码，以便下次通过用户名或邮箱登录。
+
+**参数说明**
+
+| 名称      | 类型    |  必填   | 说明    |
+| :-------- | :------ | :-----  | :------ |
+| username  | String  | N       | 用户名  |
+| email     | String  | N       | 邮箱    |
+| phone     | String  | N       | 手机号  |
+| password  | String  | N       | 密码    |
+
+**示例代码**
+
+```javascript
+const MyUser = new BaaS.User()
+const userRecord = MyUser.getWithoutData(userID)
+userRecord.setAccount({
+  email: 'foo@gmail.com',
+  username: 'bar',
+  phone: '15000000000',
+  password: 'baz',
+}).then(res => {
+  // success
+}).catch(err => {
+  // err
+})
+```
+
+**返回示例**
+
+```json
+{
+  "status": 200,
+  "data": {
+    "email": "foo@gmail.com",
+    "email_verified": false,
+    "username": "bar",
+    "phone": "15000000000",
+    "phone_verified": false,
+  }
+}
+```
+
+## 批量修改用户自定义字段
+
+`BaaS.UserRecord#update(options)`
+
+{{modifiableField()}}
+
+**参数说明**
+
+options:
+
+| 参数          | 类型    | 必填 | 默认 | 说明 |
+| :------------ | :------ | :--- | :--- |:--- |
+| enableTrigger | boolean |  否  | true | 是否触发触发器 |
+| withCount     | boolean |  否  | true | 是否返回 total_count |
+
+{{totalCount.withCountTips()}}
+
+通过设置自定义查询条件 Query，将符合条件的用户自定义字段进行批量更新操作
+
+> 注意：由于条件查询可能命中非常多的数据，默认情况下，限制为最多更新前 1000 条数据。
+> 如需要一次性更新更多数据，请通过维护分页来进行。
+
+其中：
+ - `Query` 对象的使用请查看 [查询数据项](./query.md) 章节
+
+ - `limit` 和 `offset` 的使用请查看 [分页和排序](./limit-and-order.md) 章节
+
+**请求示例**
+
+{% tabs batchUpdateAsync="async/await", batchUpdatePromise="promise" %}
+{% content "batchUpdateAsync" %}
+```js
+async function batchUpdate() {
+  try {
+    let User = new BaaS.User()
+    let query = new BaaS.Query()
+
+    // 设置查询条件（比较、字符串包含、组合等）
+    ...
+
+    // limit、offset 可以指定按条件查询命中的数据分页
+    let userRecords = User.limit(10).offset(0).getWithoutData(query)
+
+    // 与更新特定记录一致
+    userRecords.set(key1, value1)
+    userRecords.incrementBy(key2, value2)
+    userRecords.append(key3, value3)
+
+    let res = await userRecords.update().then(res => {}, err => {})
+
+    console.log(res)
+    // success
+    return res
+  } catch(err) {
+    //err 为 HError 对象
+    throw err
+  }
+}
+```
+
+{% content "batchUpdatePromise" %}
+```js
+// 知晓云后台设置的触发器将不会被触发
+function batchUpdate() {
+  let User = new BaaS.User()
+  let query = new BaaS.Query()
+
+  // 设置查询条件（比较、字符串包含、组合等）
+  ...
+
+  // limit、offset 可以指定按条件查询命中的数据分页
+  let userRecords = User.limit(10).offset(0).getWithoutData(query)
+
+  // 与更新特定记录一致
+  userRecords.set(key1, value1)
+  userRecords.incrementBy(key2, value2)
+  userRecords.append(key3, value3)
+
+  userRecords.update().then(res => {
+    console.log(res)
+    callback(null, res)
+  }, err => {
+    //err 为 HError 对象
+    callback(err)
+  })
+}
+```
+{% endtabs %}
+
+**返回示例**
+
+回调中的 res 对象结构如下：
+
+```json
+{
+  "status": 200,
+  "data": {
+    "limit": 1,
+    "next": "/dserve/v2.1/miniapp/user_profile/?where=%7B%7D&enable_trigger=1&limit=1&offset=1",
+    "offset": 0,
+    "operation_result": [
+      {
+        "success": {
+          "id": "5a3c51cdceb616ccfc9d5f78",
+          "updated_at": 1571044054
+        }
+      }
+    ],
+    "succeed": 1,
+    "total_count": 402
+  }
+}
+```
+
+### 批量修改用户自定义字段不触发触发器
+
+不触发触发器的情况下会有以下的行为:
+
+- 当更新命中总条目 <= 1000 时，无论 limit 设置为多少，均为同步更新，将返回每一条更新的 id 和更新结果，详见下方返回示例中同步执行部分。
+- 当更新命中总条目 > 1000 时，根据设置 limit 的不同，将有下方两种行为：
+  - limit <= 1000 时，操作记录为同步执行
+  - limit > 1000 或未设置时，则会转为异步执行并移除 limit 限制，变成操作全部
+
+{% tabs batchUpdateWithoutTriggerAsync="async/await", batchUpdateWithoutTriggerPromise="promise" %}
+{% content "batchUpdateWithoutTriggerAsync" %}
+```js
+async function batchUpdate() {
+  try {
+    let User = new BaaS.User()
+    let query = new BaaS.Query()
+
+    // 设置查询条件（比较、字符串包含、组合等）
+    ...
+
+    // limit、offset 可以指定按条件查询命中的数据分页
+    let userRecords = User.limit(10).offset(0).getWithoutData(query)
+
+    // 与更新特定记录一致
+    userRecords.set(key1, value1)
+    userRecords.incrementBy(key2, value2)
+    userRecords.append(key3, value3)
+
+    let res = await userRecords.update({enableTrigger: false}).then(res => {}, err => {})
+
+    console.log(res)
+    // success
+    return res
+  } catch(err) {
+    //err 为 HError 对象
+    throw err
+  }
+}
+```
+
+{% content "batchUpdateWithoutTriggerPromise" %}
+```js
+// 知晓云后台设置的触发器将不会被触发
+function batchUpdate() {
+  let User = new BaaS.User()
+  let query = new BaaS.Query()
+
+  // 设置查询条件（比较、字符串包含、组合等）
+  ...
+
+  // limit、offset 可以指定按条件查询命中的数据分页
+  let userRecords = User.limit(10).offset(0).getWithoutData(query)
+
+  // 与更新特定记录一致
+  userRecords.set(key1, value1)
+  userRecords.incrementBy(key2, value2)
+  userRecords.append(key3, value3)
+
+  userRecords.update({enableTrigger: false}).then(res => {
+    console.log(res)
+    callback(null, res)
+  }, err => {
+    //err 为 HError 对象
+    callback(err)
+  })
+}
+```
+{% endtabs %}
+
+**返回示例**
+
+同步操作时，回调中的 res 对象结构如下：
+
+```json
+{
+  "status": 200,
+  "data": {
+    "limit": 1,
+    "next": "/dserve/v2.1/miniapp/user_profile/?where=%7B%7D&enable_trigger=1&limit=1&offset=1",
+    "offset": 0,
+    "operation_result": [
+      {
+        "success": {
+          "id": "5a3c51cdceb616ccfc9d5f78",
+          "updated_at": 1571044054
+        }
+      }
+    ],
+    "succeed": 1,
+    "total_count": 402
+  }
+}
+```
+
+异步操作时，回调中的 res 对象结构如下：
+
+```json
+{
+  "status": 200,
+  "data": {
+    "statys": "ok",
+    "operation_id": 1 // 可以用来查询到最终执行的结果
+  }
+}
+```
+
+> **info**
+> 获取异步执行结果，请查看接口[文档](/cloud-function/node-sdk/async-job.md)
+
+## 删除用户
+
+`MyUser.delete(userID)`
+
+**参数说明**
+
+| 名称      | 类型    | 必填    | 说明    |
+| :-------- | :------ | :------ | :------ |
+| userID    | Number  | Y       | 用户 ID |
+
+**示例代码**
+
+```javascript
+const MyUser = new BaaS.User()
+User.delete(userID).then(res => {
+  // success
+}).catch(err => {
+  // err
+})
+```
+
+**返回示例**
+
+```json
+{
+  "status": 204,
+  "data": ""
+}
+```
+
+## 获取符合筛选条件的用户总数
+
+`BaaS.User#count()`
+
+
+{% tabs getUserCountAsync="async/await", getUserCountPromise="promise" %}
+{% content "getUserCountAsync" %}
+```js
+let MyUser = new BaaS.User()
+let query = new BaaS.Query()
+query.contains('nickname', 'like')
+let num = await MyUser.setQuery(query).count()
+console.log(num)  // 10
+```
+
+{% content "getUserCountPromise" %}
+```js
+let MyUser = new BaaS.User()
+let query = new BaaS.Query()
+query.contains('nickname', 'like')
+MyUser.setQuery(query).count().then(num => {
+  // success
+  console.log(num)  // 10
+  callback(null, res)
+}, err => {
+  // err
+  callback(err)
+})
+```
+{% endtabs %}
 
 ## 查询，获取用户列表
+
+`BaaS.User#find(options)`
+
+**参数说明**
+
+options:
+
+| 参数          | 类型    | 必填 | 默认 | 说明 |
+| :------------ | :------ | :--- | :--- |:--- |
+| withCount     | boolean |  否  | true | 是否返回 total_count |
+
+{{totalCount.withCountTips()}}
 
 用户查询与[数据表查询](./schema/query.md)方法一致
 

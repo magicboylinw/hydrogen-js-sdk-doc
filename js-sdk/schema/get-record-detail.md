@@ -1,4 +1,4 @@
-# 获取数据项详情
+# 获取单条数据
 
 ## 操作步骤
 
@@ -37,7 +37,7 @@ tableName 和 tableID 二选一，不能同时存在
 let tableName = 'product'
 let recordID = '59897882ff650c0477f00485'
 
-let Product = new wx.BaaS.TableObject(tableID)
+let Product = new wx.BaaS.TableObject(tableName)
 
 Product.get(recordID).then(res => {
   // success

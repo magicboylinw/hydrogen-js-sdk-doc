@@ -1,3 +1,12 @@
+{% macro userInfoAlert() %}
+> **info**
+> 由于 SDK 维护用户登录状态的需要，在用户授权时，并不会将开发者传入的 data 参数直接传给后端，
+> 而是会再调一次 wx.getUserInfo （由于开发者这之前已经进行了用户授权，所以这里能正常拿到授权的结果，
+> 请忽略微信开发者工具的提示）拿到 data，再传给后端。之前版本的 SDK 会导致用户信息的 country，province，city 字段始终为英文。
+> 从 **2.0.9** 起，country，province，city 所用的语言，将以用户传入的 data.detail.userInfo.language 为准。
+> 如果开发者需要更新之前已经授权用户的信息，请在用户授权时将 syncUserProfile 设置为 'overwrite'。
+{% endmacro %}
+
 # 登入登出
 
 ## 登入
@@ -15,11 +24,15 @@ SDK 提供了快速登录小程序的接口，省去使用微信登录接口时�
 
 该方法会进行简单的登录，不需要用户授权，即不会弹出授权框。
 
+> **danger**
+> 从 1.x 升级的请阅读 [1.x --> 2.x 迁移指南](/js-sdk/migrate-from-v1.md)。
+
 **参数说明**
 
 | 参数            | 类型    | 说明         |
 | :-------------- | :------ | :----------- |
 | createUser      | Boolean | 是否创建用户，默认为 `true`，可选 |
+| withUnionID     | Boolean | （SDK version >= 3.8.0）是否使用 [unionid 登录](/js-sdk/wechat/unionid-login.md)，默认为 `false`，可选 |
 
 
 `createUser` 参数决定了一个新的微信用户第一次登录时的服务端处理行为。
@@ -48,13 +61,13 @@ err 对象结构请参考[错误码和 HError 对象](/js-sdk/error-code.md)
 
 用户通过微信登录后，可以设置邮箱、用户名、密码，以便下次可以通过用户名或者邮箱登录。
 
-详情请参考 [更新用户名](../account.md) 和 [更新邮箱](../account.md) 
+详情请参考 [更新用户名](../account.md) 和 [更新邮箱](../account.md)
 
 ## 请求用户授权
 
 开发者需要提供按钮的方式，令用户触发授权操作
 
-`wx.BaaS.auth.loginWithWechat(data, {createUser})`
+`wx.BaaS.auth.loginWithWechat(data, {createUser, syncUserProfile})`
 
 **参数说明**
 
@@ -62,10 +75,16 @@ err 对象结构请参考[错误码和 HError 对象](/js-sdk/error-code.md)
 | :-------------- | :------ | :----------- |
 | data            | object | bindgetuserinfo 事件回调返回的参数 |
 | createUser | Boolean | 是否创建用户，默认为 true |
+| syncUserProfile | String | 是否[同步第一层级用户信息](/js-sdk/account.md#同步第一层级用户信息)，可选值为 `overwrite`、`setnx`、`false`，默认值为`setnx` |
+| withUnionID     | Boolean | （SDK version >= 3.8.0）是否使用 [unionid 登录](/js-sdk/wechat/unionid-login.md)，默认为 `false`，可选 |
 
 `createUser` 参数决定了一个新的微信用户第一次登录时的服务端处理行为。
 默认为 `true`，服务端会有该用户创建一个知晓云用户记录。
 当 `createUser` 为 `false` 时，服务端会终止登录过程，返回 404 错误码，开发者可根据该返回结果进行多平台账户绑定的处理。详见 [多平台用户统一登录](#多平台用户统一登录) 说明
+
+{% include "/js-sdk/frag/_sync_user_profile_param.md" %}
+
+{{ userInfoAlert() }}
 
 ```html
 <button open-type="getUserInfo" bindgetuserinfo="userInfoHandler">用户授权</button>
@@ -108,56 +127,76 @@ then 回调中的 user 对象为 currentUser 对象，请参考[currentUser 小�
 
 **其他错误**
 catch 回调中的 res 对象示例：
- 
+
 res 对象结构请参考[错误码和 HError 对象](/js-sdk/error-code.md)
 
 
 > **info**
-> `wx.BaaS.auth.linkWechat` 默认会检查用户是否已登录，若未登录，该接口默认会先执行登录操作
+> `wx.BaaS.auth.loginWithWechat` 默认会检查用户是否已登录，若未登录，该接口默认会先执行登录操作
 
 ## 关联微信小程序
 
-`wx.BaaS.auth.linkWechat(data)`
+通过此方法可将通用注册登录用户（在已登录状态下）关联微信小程序账号。
+
+`UserRecord.linkWechat(data, {syncUserProfile})`
 
 **参数说明**
 
 | 参数    | 类型    | 说明         |
 | :------| :------ | :----------- |
-| data   | object | wx.getUserInfo() success 回调中收到的参数，可选 |
+| data            | object | bindgetuserinfo 事件回调返回的参数 |
+| syncUserProfile | String | 是否[同步第一层级用户信息](/js-sdk/account.md#同步第一层级用户信息)，可选值为 `overwrite`、`setnx`、`false`，默认值为`setnx` |
+| withUnionID     | Boolean | （SDK version >= 3.8.0）是否使用 [unionid 登录](/js-sdk/wechat/unionid-login.md) 并关联，默认为 `false`，可选 |
 
-```javascript
-// 必须在用户通过 login API 登录后才能进行绑定 
-wx.BaaS.auth.login({username: 'ifanrx', password: '111111'}).then(user =>{
-  // user 为 currentUser 对象
-  return user.linkWechat()
-}).then(res=>{
-  // success 
-  // 用户可以通过微信授权登录同一个账户了
-})
-```
+{% include "/js-sdk/frag/_sync_user_profile_param.md" %}
 
-```javascript
-// 必须在用户通过 login API 登录后才能进行绑定 
-wx.BaaS.auth.login({username: 'ifanrx', password: '111111'}).then(user =>{
-  // user 为 currentUser 对象
-  
-  wx.getUserInfo({
-    success(info){
-      user.linkWechat(info).then(res=>{
-        // 关联成功
-        console.log(res.statusCode)
-      })    
-    }
+{{ userInfoAlert() }}
+
+
+**请求示例**
+
+1. 不获取用户信息:
+
+  ```javascript
+  // 必须在用户通过 login API 登录后才能进行绑定
+  wx.BaaS.auth.login({username: 'ifanrx', password: '111111'}).then(user =>{
+    // user 为 currentUser 对象
+    return user.linkWechat()
+  }).then(res=>{
+    // success
+    // 用户可以通过微信授权登录同一个账户了
   })
-})
-```
+  ```
+
+2. 获取用户信息:
+
+  ```html
+  <button open-type="getUserInfo" bindgetuserinfo="userInfoHandler">用户授权</button>
+  ```
+
+  ```js
+  Page({
+    // ...
+    userInfoHandler(data) {
+      // 必须在用户通过 login API 登录后才能进行绑定
+      wx.BaaS.auth.login({username: 'ifanrx', password: '111111'}).then(user =>{
+        // user 为 currentUser 对象
+        user.linkWechat(data).then(res=>{
+          // 关联成功
+          console.log(res.statusCode)
+        })
+      })
+    },
+    // ...
+  })
+  ```
 
 **返回示例**
 ```JSON
 {
   "statusCode": 200,
   "data": {
-    "message": "WeChat associate succeed.",
+    "message": "User associated.",
     "openid": "ofo380BgVHDSf3gxxx",
     "status": "ok",
     "unionid": "oUsert59Z0TZ666",
@@ -187,10 +226,10 @@ wx.BaaS.auth.loginWithWechat(null, {createUser: false}).then(user => {
     if (err.code === 404) {
       wx.BaaS.auth.login({email: 'ifanrx@ifanr.com', password: 'ifanrx123'}).then(user => {
         user.linkWechat().then(res => {
-          console.log(res.statusCode) 
+          console.log(res.statusCode)
           // 关联成功，下次可以通过 wx.BaaS.auth.loginWithWechat 登录了
         })
-      })    
+      })
     }
 })
 ```
@@ -347,7 +386,7 @@ then 回调中的 res 对象示例：
 
 **其他错误**
 catch 回调中的 res 对象示例：
- 
+
 res 对象结构请参考[错误码和 HError 对象](/js-sdk/error-code.md)
 
 

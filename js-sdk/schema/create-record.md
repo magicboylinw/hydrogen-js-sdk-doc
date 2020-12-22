@@ -1,5 +1,28 @@
 # 新增数据记录
 
+`BaaS.TableRecord#save(options)`
+
+**参数说明**
+
+options:
+
+| 参数          | 类型    | 必填 | 默认 | 说明 |
+| :------------ | :------ | :--- | :--- |:--- |
+| expand        | string 或 string[] |  否  | 空字符串 | 是否返回对应字段扩展 |
+
+> **info**
+> 临时用户新增数据记录，请先查看[数据表匿名读写权限特别说明](/js-sdk/schema/#数据表匿名读写权限特别说明)
+
+<!-- 分隔两个 info -->
+> **info**
+> SDK 3.14.5 及以上版本提供单条数据新增返回字段扩展的支持。expand 属性可传入字符串或者包含字符串的数组。例如：
+>
+> `record.save({expand: 'created_by'})`
+>
+> `record.save({expand: ['created_by']})`
+>
+> 有关字段扩展的介绍，请查看[字段扩展](/js-sdk/schema/select-and-expand.html/#字段扩展)。
+
 ## 操作步骤
 
 1.通过 `tableName` 或 `tableID` 实例化一个 `TableObject` 对象，操作该对象即相当于操作对应的数据表，这里推荐用 tableName
@@ -44,7 +67,8 @@ MyRecord.set(key2, value2)
 ```
 
 > **info**
-> 对同一字段进行多次 `set` 操作，后面的数据会覆盖掉前面的数据
+> - 对同一字段进行多次 `set` 操作，后面的数据会覆盖掉前面的数据
+> - 若插入数据中包含 `created_by, created_at, updated_at` 这几个字段，则最终生成的数据中这几个字段将以插入数据中设置的字段值为准。
 
 4.将创建的记录保存到服务器
 
@@ -287,10 +311,10 @@ record.save()
 ```
 {% endifanrxCodeTabs %}
 
-## 添加 pointer 类型数据 
+## 添加 pointer 类型数据
 
 > **info**
-> 每张表最多能建立 3 个 pointer 类型的字段。如有更多需求，请提交工单说明  
+> 每张表最多能建立 3 个 pointer 类型的字段。如有更多需求，请提交工单说明
 > pointer 指向的数据表，不能改名或删除
 
 假设现在有一张 Article 表, Article 表部分字段如下:
@@ -300,7 +324,7 @@ record.save()
 | comment        |  pointer         | 指向了 `Comment` 表     |
 | user           |  pointer         | 指向了 `_userprofile` 表     |
 
-现在在 Article 表中新增一条数据，其中: 
+现在在 Article 表中新增一条数据，其中:
 
 comment 字段指向了 Comment 表中 id 为 5bad87ab0769797b4fb27a1b 的数据行
 
@@ -313,15 +337,15 @@ let Comment = new wx.BaaS.TableObject('Comment')
 // 5bad87ab0769797b4fb27a1b 为 Comment 表中某行数据的 id
 let comment = Comment.getWithoutData('5bad87ab0769797b4fb27a1b')
 // 69147880 为 _userprofile 表中某行数据的 id
-let user = new wx.BaaS.User().getWithoutData(69147880)
+let user = new wx.BaaS.User().getWithoutData('69147880')
 
 // 在 city 表中创建一行数据
 let Article = new wx.BaaS.TableObject('Article')
 let article = Article.create()
 
 // 给 pointer 字段赋值
-Article.set('comment', comment)
-Article.set('user', user)
+article.set('comment', comment)
+article.set('user', user)
 
 article.save().then(res=>{
   // success
@@ -359,6 +383,9 @@ res 结构如下
 SDK **1.4.0** 及以上版本支持批量新增数据项。
 
 `TableObject.createMany([item,...])`
+
+> **info**
+> 批量创建记录的数量，最大限制为 1000
 
 **参数说明**
 
@@ -440,6 +467,9 @@ err 对象结构请参考[错误码和 HError 对象](/js-sdk/error-code.md)
 
 ### 批量创建时不触发触发器
 
+> **info**
+> 批量创建记录的数量，最大限制为 1000
+
 ```js
 // 知晓云后台设置的触发器将不会被触发
 MyTableObject.createMany(records, {enableTrigger: false}).then(res => {
@@ -447,4 +477,36 @@ MyTableObject.createMany(records, {enableTrigger: false}).then(res => {
 }, err => {
   //err 为 HError 对象
 })
+```
+
+**返回示例**
+
+```json
+{
+  "statusCode": 201, // 201 表示创建成功, 注意这不代表所有数据都插入成功，具体要看 operation_result 字段
+  "data": {
+    "succeed": 10, // 成功插入记录数
+    "total_count": 10, // 总的待插入记录数
+    "operation_result": [  // 创建的详细结果
+       {
+         "success": {      // 成功时会有 success 字段
+           "id": "5bffbab54b30640ba8135650",
+           "created_at": 1543486133
+         }
+       },
+       {
+         "success": {
+           "id": "5bffbab54b30640ba8135651",
+           "created_at": 1543486133
+         }
+       },
+       {
+         "error": {     // 失败时会有 error 字段
+           "code": 16837,
+           "err_msg": "数据更新失败，具体错误信息可联系知晓云微信客服：minsupport3 获取。"
+         }
+       }
+     ]
+  }
+}
 ```
